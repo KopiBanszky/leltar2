@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Searchbar extends StatefulWidget {
@@ -35,7 +36,7 @@ class _SearchbarState extends State<Searchbar> {
         widget.drawerFunction ?? () => Scaffold.of(context).openDrawer();
     moreFunction = widget.moreFunction ?? () {};
     drawerIcon = widget.drawerIcon ?? Icons.sort_outlined;
-    moreIcon = widget.moreIcon ?? Icons.more_vert;
+    moreIcon = widget.moreIcon;
     title = widget.title;
   }
 
@@ -127,14 +128,19 @@ class _SearchbarState extends State<Searchbar> {
                   Colors.transparent,
                 ),
                 padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                  const EdgeInsets.all(6),
+                  const EdgeInsets.all(kIsWeb ? 12 : 6),
                 ),
               ),
-              child: const Image(
-                image: AssetImage(
-                  "assets/439logo_nobg.png",
-                ),
-              ),
+              child: moreIcon == null
+                  ? const Image(
+                      image: AssetImage(
+                        "assets/439logo_nobg.png",
+                      ),
+                    )
+                  : Icon(
+                      moreIcon,
+                      color: Colors.white,
+                    ),
               onPressed: () {},
             ),
           ],
