@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+class PageViewerWithIndicatorController {
+  int pageIndex = 0;
+}
+
 class PageViewerWithIndicator extends StatefulWidget {
   const PageViewerWithIndicator({
     super.key,
@@ -7,12 +11,14 @@ class PageViewerWithIndicator extends StatefulWidget {
     required this.pages,
     this.direction,
     this.indicator,
+    this.controller,
   });
 
   final double height;
   final List<Widget> pages;
   final Axis? direction;
   final bool? indicator;
+  final PageViewerWithIndicatorController? controller;
 
   @override
   State<PageViewerWithIndicator> createState() =>
@@ -29,6 +35,7 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
   late List<Widget> pages;
   late Axis direction;
   late bool indicator;
+  late PageViewerWithIndicatorController controller;
 
   @override
   void initState() {
@@ -42,6 +49,7 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
       length: pages.length,
       vsync: this,
     );
+    controller = widget.controller ?? PageViewerWithIndicatorController();
   }
 
   @override
@@ -54,6 +62,7 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
   void _handlePageChange(int index) {
     setState(() {
       currentPageIndex = index;
+      controller.pageIndex = index;
     });
   }
 

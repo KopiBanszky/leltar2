@@ -5,6 +5,8 @@ class WidgetItem extends StatelessWidget {
       {super.key,
       required this.name,
       required this.description,
+      required this.onPressed,
+      this.onHold,
       this.image,
       this.icon = Icons.open_in_new_outlined});
 
@@ -12,6 +14,8 @@ class WidgetItem extends StatelessWidget {
   final String description;
   final Image? image;
   final IconData? icon;
+  final Function() onPressed;
+  final Function()? onHold;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +34,8 @@ class WidgetItem extends StatelessWidget {
         padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
             const EdgeInsets.all(0)),
       ),
-      onPressed: () {},
+      onPressed: onPressed,
+      onLongPress: onHold,
       child: Padding(
         padding: const EdgeInsets.all(0),
         child: Container(
@@ -95,13 +100,28 @@ class WidgetItem extends StatelessWidget {
                               padding: const EdgeInsetsDirectional.fromSTEB(
                                   0, 0, 0, 0),
                               child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: image ??
-                                    Icon(
-                                      icon,
-                                      color: const Color(0xff95A1AC),
-                                      size: 140,
-                                    ),
+                                padding: const EdgeInsets.all(0.0),
+                                child: image == null
+                                    ? Icon(
+                                        icon,
+                                        color: const Color(0xff95A1AC),
+                                        size: 140,
+                                      )
+                                    : Container(
+                                        width: MediaQuery.sizeOf(context).width,
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: image!.image,
+                                            fit: BoxFit.cover,
+                                          ),
+                                          borderRadius: const BorderRadius.only(
+                                            bottomLeft: Radius.circular(0),
+                                            bottomRight: Radius.circular(0),
+                                            topLeft: Radius.circular(18),
+                                            topRight: Radius.circular(18),
+                                          ),
+                                        ),
+                                      ),
                               ),
                             ),
                           ),

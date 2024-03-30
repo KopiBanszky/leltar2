@@ -6,11 +6,15 @@ class ItemBuilder extends StatefulWidget {
     required this.elements,
     required this.column,
     required this.width,
+    this.paddingTop,
+    this.paddingBottom,
   });
 
   final List<Widget> elements;
   final int column;
   final double width;
+  final double? paddingTop;
+  final double? paddingBottom;
 
   @override
   State<ItemBuilder> createState() => _ItemBuilderState();
@@ -20,6 +24,9 @@ class _ItemBuilderState extends State<ItemBuilder> {
   late List<Widget> elements;
   late int columnCount;
   late double width;
+  late double gap;
+  late double paddingTop;
+  late double paddingBottom;
 
   Widget buildColumn() {
     List<Widget> row = [];
@@ -29,7 +36,7 @@ class _ItemBuilderState extends State<ItemBuilder> {
       row.add(elements[i]);
       if (row.length == columnCount) {
         column.add(Padding(
-          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+          padding: EdgeInsets.fromLTRB(0, paddingTop, 0, paddingBottom),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: row,
@@ -41,7 +48,7 @@ class _ItemBuilderState extends State<ItemBuilder> {
 
     if (row.length < columnCount) {
       column.add(Padding(
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        padding: EdgeInsets.fromLTRB(0, paddingTop, 0, paddingBottom),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: row,
@@ -65,6 +72,8 @@ class _ItemBuilderState extends State<ItemBuilder> {
     columnCount = widget.column;
     elements = widget.elements;
     width = widget.width;
+    paddingBottom = widget.paddingBottom ?? 10;
+    paddingTop = widget.paddingTop ?? 10;
   }
 
   @override
