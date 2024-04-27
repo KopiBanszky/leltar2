@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               }
             : null,
       ),
-    );
+    ); 
     _pageViewController = PageController();
     _tabController = TabController(
       length: 2,
