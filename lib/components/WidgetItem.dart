@@ -23,14 +23,14 @@ class WidgetItem extends StatelessWidget {
       style: ButtonStyle(
         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(5),
           ),
         ),
         maximumSize: MaterialStateProperty.all<Size>(
             Size(MediaQuery.sizeOf(context).width * .4, 187)),
         backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-        shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
-        elevation: MaterialStateProperty.all<double>(0),
+        // shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        // elevation: MaterialStateProperty.all<double>(0),
         padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
             const EdgeInsets.all(0)),
       ),
@@ -43,7 +43,7 @@ class WidgetItem extends StatelessWidget {
           height: 187,
           decoration: BoxDecoration(
             color: Colors.black,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(5),
             shape: BoxShape.rectangle,
           ),
           child: Stack(
@@ -71,7 +71,7 @@ class WidgetItem extends StatelessWidget {
                       begin: AlignmentDirectional(0.5, -1),
                       end: AlignmentDirectional(-0.5, 1),
                     ),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(5),
                   ),
                 ),
               ),
@@ -88,8 +88,8 @@ class WidgetItem extends StatelessWidget {
                         borderRadius: BorderRadius.only(
                           bottomLeft: Radius.circular(0),
                           bottomRight: Radius.circular(0),
-                          topLeft: Radius.circular(18),
-                          topRight: Radius.circular(18),
+                          topLeft: Radius.circular(5),
+                          topRight: Radius.circular(5),
                         ),
                       ),
                       child: Stack(
@@ -117,8 +117,8 @@ class WidgetItem extends StatelessWidget {
                                           borderRadius: const BorderRadius.only(
                                             bottomLeft: Radius.circular(0),
                                             bottomRight: Radius.circular(0),
-                                            topLeft: Radius.circular(18),
-                                            topRight: Radius.circular(18),
+                                            topLeft: Radius.circular(5),
+                                            topRight: Radius.circular(5),
                                           ),
                                         ),
                                       ),
@@ -144,8 +144,8 @@ class WidgetItem extends StatelessWidget {
                       end: AlignmentDirectional(0, 1),
                     ),
                     borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(18),
-                      bottomRight: Radius.circular(18),
+                      bottomLeft: Radius.circular(5),
+                      bottomRight: Radius.circular(5),
                       topLeft: Radius.circular(0),
                       topRight: Radius.circular(0),
                     ),
@@ -198,7 +198,7 @@ class WidgetItem extends StatelessWidget {
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(0),
-                            bottomRight: Radius.circular(18),
+                            bottomRight: Radius.circular(5),
                             topLeft: Radius.circular(0),
                             topRight: Radius.circular(0),
                           ),

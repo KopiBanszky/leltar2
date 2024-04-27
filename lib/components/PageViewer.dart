@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:leltar_2/functions/apiManager/categories.dart';
+import 'package:leltar_2/pages/HomaPage.dart';
 
 class PageViewerWithIndicatorController {
   int pageIndex = 0;
+  int categoryLength = 0;
+  int itemLength = 0;
+
+  void setCatLength(int length) {
+    categoryLength = length;
+  }
+
+  void setItemLength(int length) {
+    itemLength = length;
+  }
 }
+
+ItemType oldItemType = ItemType.LARGE;
 
 class PageViewerWithIndicator extends StatefulWidget {
   const PageViewerWithIndicator({
@@ -12,6 +26,7 @@ class PageViewerWithIndicator extends StatefulWidget {
     this.direction,
     this.indicator,
     this.controller,
+    this.pageController,
   });
 
   final double height;
@@ -19,6 +34,7 @@ class PageViewerWithIndicator extends StatefulWidget {
   final Axis? direction;
   final bool? indicator;
   final PageViewerWithIndicatorController? controller;
+  final PageController? pageController;
 
   @override
   State<PageViewerWithIndicator> createState() =>
@@ -37,10 +53,14 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
   late bool indicator;
   late PageViewerWithIndicatorController controller;
 
+  //TODO: ne így
+  // ValueKey key = ValueKey<DateTime>(DateTime.now());
+
   @override
   void initState() {
     super.initState();
-    _pageViewController = PageController();
+    controller = widget.controller ?? PageViewerWithIndicatorController();
+    _pageViewController = widget.pageController ?? PageController();
     height = widget.height;
     pages = widget.pages;
     direction = widget.direction ?? Axis.horizontal;
@@ -49,15 +69,44 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
       length: pages.length,
       vsync: this,
     );
-    controller = widget.controller ?? PageViewerWithIndicatorController();
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    _pageViewController.dispose();
-    _tabController.dispose();
+  void didUpdateWidget(PageViewerWithIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // print(oldItemType.name);
+    // print(itemType.name);
+    // if (itemType != oldItemType) {
+    //   key = ValueKey<DateTime>(DateTime.now());
+    //   oldItemType = itemType;
+    //   print("pageviewver CHANGED");
+    // }
+    if (widget.height != height) {
+      height = widget.height;
+    }
+    if (widget.pages != pages) {
+      pages = widget.pages;
+    }
+    if (widget.direction != direction) {
+      direction = widget.direction ?? Axis.horizontal;
+    }
+    if (widget.indicator != indicator) {
+      indicator = widget.indicator ?? true;
+    }
+    if (widget.controller != controller) {
+      controller = widget.controller ?? PageViewerWithIndicatorController();
+    }
+    if (widget.pageController != _pageViewController) {
+      _pageViewController = widget.pageController ?? PageController();
+    }
   }
+
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   _pageViewController.dispose();
+  //   _tabController.dispose();
+  // }
 
   void _handlePageChange(int index) {
     setState(() {
@@ -94,6 +143,7 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
         Container(
           height: height,
           child: PageView(
+            // key: widget.key,
             controller: _pageViewController,
             scrollDirection: direction,
             onPageChanged: _handlePageChange,

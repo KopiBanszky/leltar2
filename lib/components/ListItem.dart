@@ -56,19 +56,20 @@ class ListItem extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: MediaQuery.sizeOf(context).width * .125,
+              width: MediaQuery.sizeOf(context).width * .135,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(10.0, 10, 10, 10),
+                padding: const EdgeInsets.fromLTRB(5.0, 5, 5, 5),
                 child: image == null
                     ? Icon(icon, color: Colors.orange, size: 30)
                     : Container(
                         width: MediaQuery.of(context).size.width * 0.125,
-                        // height: 55,
+                        // height: 60,
                         decoration: BoxDecoration(
                           image: DecorationImage(
                             image: image!.image,
                             fit: BoxFit.cover,
                           ),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
               ),

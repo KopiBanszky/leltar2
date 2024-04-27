@@ -68,12 +68,12 @@ class _ItemBuilderState extends State<ItemBuilder> {
 
   @override
   void initState() {
-    super.initState();
-    columnCount = widget.column;
     elements = widget.elements;
+    columnCount = widget.column;
     width = widget.width;
     paddingBottom = widget.paddingBottom ?? 10;
     paddingTop = widget.paddingTop ?? 10;
+    super.initState();
   }
 
   @override

@@ -131,6 +131,7 @@ class _SearchbarState extends State<Searchbar> {
                     const EdgeInsets.all(kIsWeb ? 12 : 6),
                   ),
                 ),
+                onPressed: moreFunction,
                 child: moreIcon == null
                     ? const Image(
                         image: AssetImage(
@@ -141,7 +142,6 @@ class _SearchbarState extends State<Searchbar> {
                         moreIcon,
                         color: Colors.white,
                       ),
-                onPressed: () {},
               ),
             ],
           ),

@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:leltar_2/accountSystem/isLoggedIn.dart';
 
 class RquestResult {
   bool ok;
@@ -11,12 +12,14 @@ class RquestResult {
 
 const PROTOCOL = "http";
 const PROTOCOLL_METHOD = Uri.http;
-// const DOMAIN = "amogus.439boldogasszony.hu";   
+// const DOMAIN = "amogus.439boldogasszony.hu";
 // const DOMAIN = "192.168.1.69";
-const DOMAIN = "localhost:9081";
+const DOMAIN = "192.168.1.69:9081";
 
 Future<RquestResult> http_get(String route, [dynamic data]) async {
   //var dataStr = jsonEncode(data);//.replaceAll(":", "=").replaceAll(",", "&").replaceAll("{", "").replaceAll("}", "");
+  data["userID"] = ID;
+  data["access"] = ACCESS.toString();
   Uri url = PROTOCOLL_METHOD(DOMAIN, route, data);
   var result = await http.get(url);
   return RquestResult(jsonEncode(result.body), true);
@@ -24,6 +27,8 @@ Future<RquestResult> http_get(String route, [dynamic data]) async {
 
 Future<RquestResult> http_post(String route, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
+  data["userID"] = ID;
+  data["access"] = ACCESS.toString();
   var dataStr = jsonEncode(data);
   var result = await http
       .post(url, body: dataStr, headers: {"Content-type": "application/json"});
@@ -32,6 +37,8 @@ Future<RquestResult> http_post(String route, [dynamic data]) async {
 
 Future<RquestResult> http_put(String route, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
+  data["userID"] = ID;
+  data["access"] = ACCESS.toString();
   var dataStr = jsonEncode(data);
   var result = await http
       .put(url, body: dataStr, headers: {"Content-type": "application/json"});
@@ -40,14 +47,15 @@ Future<RquestResult> http_put(String route, [dynamic data]) async {
 
 Future<RquestResult> http_delete(String route, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
+  data["userID"] = ID;
+  data["access"] = ACCESS.toString();
   var dataStr = jsonEncode(data);
-  var result = await http
-      .delete(url, body: dataStr, headers: {"Content-type": "application/json"});
+  var result = await http.delete(url,
+      body: dataStr, headers: {"Content-type": "application/json"});
   return RquestResult(result.body, true);
 }
 
-
-class Http {
+class Request {
   static Future<RquestResult> get(String route, [dynamic data]) async {
     return await http_get(route, data);
   }
