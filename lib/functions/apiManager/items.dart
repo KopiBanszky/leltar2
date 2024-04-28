@@ -183,6 +183,8 @@ class Items {
     String order = "ASC",
     int limit = -1,
     int offset = 0,
+    bool updateOnLoad = false,
+    Function? onLoad,
   }) async {
     items = await Items.requestItems(
       path,
@@ -191,6 +193,8 @@ class Items {
       order: order,
       limit: limit,
       offset: offset,
+      updateOnLoad: updateOnLoad,
+      onLoad: onLoad,
     );
     return items;
   }
@@ -202,6 +206,8 @@ class Items {
     String order = "ASC",
     int limit = -1,
     int offset = 0,
+    bool updateOnLoad = false,
+    Function? onLoad,
   }) async {
     RquestResult res = await Request.get("getData", {
       "type": "item",
@@ -215,11 +221,14 @@ class Items {
     if (res.ok) {
       List<Item> items = [];
       dynamic data = jsonDecode(jsonDecode(res.data));
+
       if (data == false) return [];
       for (var item in data) {
         if (item["type"] == "item") {
           Item _item = Item.fromJson(item);
-          await _item.requestIndex();
+          _item.requestIndex().then((value) {
+            if (updateOnLoad) onLoad?.call();
+          });
           _item.requestImages();
           items.add(_item);
         }
@@ -291,7 +300,6 @@ class Items {
           items.add(_item);
         }
       }
-      return items;
     }
     return [];
   }
@@ -356,6 +364,7 @@ class Items {
       // print(item.name);
     }
     return ItemBuilder(
+      key: ValueKey<DateTime>(DateTime.now()),
       elements: elements,
       column: column,
       width: width,

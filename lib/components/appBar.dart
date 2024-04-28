@@ -6,10 +6,24 @@ class ResponsiveAppBar {
 
   ResponsiveAppBar({this.child}) {}
 
+  bool setScrollStatus(double status) {
+    bool gradient = scrollStatus < 10.0;
+    if (gradient && status > 10.0) {
+      scrollStatus = status;
+      return true;
+    }
+    if (!gradient && status < 10.0) {
+      scrollStatus = status;
+      return true;
+    }
+    return false;
+  }
+
   PreferredSize widget() {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight + 10),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: const [Colors.black, Colors.transparent],

@@ -259,6 +259,7 @@ class Categories {
       _elements.add(item.display(context, type: type));
     }
     return ItemBuilder(
+      key: ValueKey<DateTime>(DateTime.now()),
       elements: _elements,
       column: column,
       width: width,

@@ -142,13 +142,7 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
       children: [
         Container(
           height: height,
-          child: PageView(
-            // key: widget.key,
-            controller: _pageViewController,
-            scrollDirection: direction,
-            onPageChanged: _handlePageChange,
-            children: pages,
-          ),
+          child: pages.elementAt(controller.pageIndex),
         ),
         if (indicator)
           Expanded(

@@ -1,11 +1,12 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:leltar_2/components/PageViewer.dart';
 import 'package:leltar_2/components/appBar.dart';
 import 'package:leltar_2/components/drawer.dart';
 import 'package:leltar_2/components/searchbar.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/items.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 
 ItemType categoryType = ItemType.LARGE;
 ItemType itemType = ItemType.LARGE;
@@ -22,77 +23,57 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   late ResponsiveAppBar appBar;
 
-  late ValueKey _pageViewerkey;
-  late PageViewerWithIndicatorController _pageViewController;
-  late TabController _tabController;
-  late PageController _pageController;
-
   late Categories categories;
   late Widget categoryWidgets = const SizedBox();
 
   late Items items;
   late Widget itemWidgets = const SizedBox();
 
-  int itemOffset = 0;
-  int categoryOffset = 0;
-  Map<ItemType, int> limits = {
-    ItemType.WIDGET: 10,
-    ItemType.LIST: 15,
-    ItemType.LARGE: 4,
-  };
-  bool isCategoryBottom = false;
-  bool isItemBottom = false;
+  late Widget displayWidget;
 
-  void lengthenList(bool isCategory) {
-    if (isCategory && !isCategoryBottom) {
-      isCategoryBottom = true;
-      categories
-          .loadMore(arguments?["route"] ?? "default",
-              limit: limits[categoryType] ?? 10)
-          .then((value) {
-        if (value.isNotEmpty) {
-          categoryWidgets = categories.display(
-            context,
-            type: categoryType,
-            column: categoryType == ItemType.WIDGET ? 2 : 1,
-            width: MediaQuery.sizeOf(context).width * 0.9,
-            paddingBottom: 5,
-            paddingTop: 5,
-          );
-          _pageViewController.setCatLength(items.items.length);
-          setState(() {
-            categoryOffset += limits[categoryType] ?? 10;
-            isCategoryBottom = false;
-          });
-        }
-      });
-    } else if (!isItemBottom) {
-      isItemBottom = true;
-      items
-          .loadMore(arguments?["route"] ?? "default",
-              limit: limits[itemType] ?? 10)
-          .then((value) {
-        if (value.isNotEmpty) {
-          itemWidgets = items.display(
-            context,
-            type: itemType,
-            column: itemType == ItemType.WIDGET ? 2 : 1,
-            width: MediaQuery.sizeOf(context).width * 0.9,
-            paddingBottom: 5,
-            paddingTop: 5,
-          );
-          _pageViewController.setItemLength(items.items.length);
-          setState(() {
-            itemOffset += limits[itemType] ?? 10;
-            isItemBottom = false;
-          });
-        }
-      });
+  double _height = 70.0;
+
+  int pageIndex = 0;
+
+  void loadCategories() {
+    if (mounted) {
+      // categoryWidgets = const Text(
+      //   "Categories",
+      //   style: TextStyle(color: Colors.white),
+      // );
+      categoryWidgets = categories.display(
+        context,
+        type: categoryType,
+        column: categoryType == ItemType.WIDGET ? 2 : 1,
+        width: MediaQuery.sizeOf(context).width * 0.9,
+        paddingBottom: 5,
+        paddingTop: 5,
+      );
+      if (categories.items.isEmpty) pageIndex = 1;
+      setState(() {});
+    }
+  }
+
+  void loadItems() {
+    if (mounted) {
+      // itemWidgets = Text(
+      //   "Items",
+      //   style: TextStyle(color: Colors.white),
+      // );
+      itemWidgets = items.display(
+        context,
+        type: itemType,
+        column: itemType == ItemType.WIDGET ? 2 : 1,
+        width: MediaQuery.sizeOf(context).width * 0.9,
+        paddingBottom: 5,
+        paddingTop: 5,
+      );
+      setState(() {});
     }
   }
 
   @override
-  void didChangeDependencies() {
+  void didChangeDependencies() async {
     super.didChangeDependencies();
     arguments = ModalRoute.of(context)!.settings.arguments;
     appBar = ResponsiveAppBar(
@@ -106,7 +87,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             : null,
         moreFunction: () {
           setState(() {
-            _pageViewerkey = ValueKey<DateTime>(DateTime.now());
             if (categoryType == ItemType.LIST) {
               categoryType = ItemType.WIDGET;
               itemType = ItemType.WIDGET;
@@ -117,159 +97,147 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               categoryType = ItemType.LIST;
               itemType = ItemType.LIST;
             }
+            loadCategories();
+            loadItems();
           });
         },
       ),
     );
     if (categories.items.isEmpty) {
-      categories
-          .getCategories(
+      await categories.getCategories(
         arguments?["route"] ?? "default",
-      )
-          .then((value) {
-        if (mounted) {
-          categoryWidgets = categories.display(
-            context,
-            type: categoryType,
-            column: categoryType == ItemType.WIDGET ? 2 : 1,
-            width: MediaQuery.sizeOf(context).width * 0.9,
-            paddingBottom: 5,
-            paddingTop: 5,
-          );
-          setState(() {
-            _pageViewController.pageIndex = (value.isNotEmpty) ? 0 : 1;
-            _pageController.jumpToPage(value.isEmpty ? 1 : 0);
-            _pageViewController.categoryLength = value.length;
-            categoryOffset += limits[categoryType] ?? 10;
-          });
-        }
-      });
-    } else if (mounted) {
-      categoryWidgets = categories.display(
-        context,
-        type: categoryType,
-        column: categoryType == ItemType.WIDGET ? 2 : 1,
-        width: MediaQuery.sizeOf(context).width * 0.9,
-        paddingBottom: 5,
-        paddingTop: 5,
       );
-      setState(() {
-        _pageViewController.pageIndex = (categories.items.isNotEmpty) ? 0 : 1;
-        _pageController.jumpToPage(categories.items.isEmpty ? 1 : 0);
-        _pageViewController.categoryLength = categories.items.length;
-        categoryOffset += limits[categoryType] ?? 10;
-      });
     }
+    loadCategories();
 
     if (items.items.isEmpty) {
-      items
-          .getItems(
-        arguments?["route"] ?? "default",
-      )
-          .then((value) {
-        if (mounted) {
-          itemWidgets = items.display(
-            context,
-            type: itemType,
-            column: itemType == ItemType.WIDGET ? 2 : 1,
-            width: MediaQuery.sizeOf(context).width * 0.9,
-            paddingBottom: 5,
-            paddingTop: 5,
-          );
-          setState(() {
-            itemOffset += limits[itemType] ?? 10;
-            _pageViewController.itemLength = value.length;
-          });
-        }
-      });
-    } else if (mounted) {
-      itemWidgets = items.display(
-        context,
-        type: itemType,
-        column: itemType == ItemType.WIDGET ? 2 : 1,
-        width: MediaQuery.sizeOf(context).width * 0.9,
-        paddingBottom: 5,
-        paddingTop: 5,
-      );
-      setState(() {
-        itemOffset += limits[itemType] ?? 10;
-        _pageViewController.itemLength = items.items.length;
+      await items.getItems(arguments?["route"] ?? "default", updateOnLoad: true,
+          onLoad: () {
+        loadItems();
+        setState(() {});
       });
     }
+    loadItems();
   }
 
   @override
   void initState() {
     super.initState();
-    _pageViewController = PageViewerWithIndicatorController();
-    _pageController = PageController();
-    _tabController = TabController(
-      length: 2,
-      vsync: this,
-    );
-    _pageViewerkey = ValueKey<DateTime>(DateTime.now());
     categories = Categories();
     items = Items();
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    // _pageViewController.dispose();
-    _tabController.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    if (pageIndex == 0) {
+      displayWidget = categoryWidgets;
+    } else {
+      displayWidget = itemWidgets;
+    }
     return Scaffold(
-        backgroundColor: const Color(
-          0xFF1d2428,
+      backgroundColor: const Color(
+        0xFF1d2428,
+      ),
+      drawer: const BasicDrawer(),
+      appBar: appBar.widget(),
+      body: Container(
+        color: Colors.transparent,
+        height: MediaQuery.of(context).size.height * .87,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            if (scrollNotification is ScrollUpdateNotification) {
+              if (appBar.setScrollStatus(scrollNotification.metrics.pixels)) {
+                setState(() {});
+              }
+              if (scrollNotification.scrollDelta! < 0.0) {
+                if (_height == 0.0) {
+                  setState(() {
+                    _height = 70.0;
+                  });
+                }
+              } else {
+                if (_height == 70.0) {
+                  setState(() {
+                    _height = 0.0;
+                  });
+                }
+              }
+            }
+            return true;
+          },
+          child: SingleChildScrollView(
+            // physics: const BouncingScrollPhysics(),
+            child: displayWidget,
+          ),
         ),
-        drawer: const BasicDrawer(),
-        appBar: appBar.widget(),
-        body: PageViewerWithIndicator(
-          key: _pageViewerkey,
-          height: MediaQuery.of(context).size.height * .87,
-          controller: _pageViewController,
-          pageController: _pageController,
-          pages: [
-            Container(
-              color: Colors.transparent,
-              height: MediaQuery.of(context).size.height * .87,
-              child: NotificationListener<ScrollNotification>(
-                onNotification: (scrollNotification) {
-                  if (scrollNotification is ScrollUpdateNotification) {
-                    setState(() {
-                      appBar.scrollStatus = scrollNotification.metrics.pixels;
-                    });
-                  }
-                  return true;
-                },
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: categoryWidgets,
-                ),
-              ),
-            ),
-            Container(
-              color: Colors.transparent,
-              height: MediaQuery.of(context).size.height * .87,
-              child: NotificationListener<ScrollNotification>(
-                onNotification: (scrollNotification) {
-                  if (scrollNotification is ScrollUpdateNotification) {
-                    setState(() {
-                      appBar.scrollStatus = scrollNotification.metrics.pixels;
-                    });
-                  }
-                  return true;
-                },
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: itemWidgets,
-                ),
-              ),
-            ),
+      ),
+      bottomNavigationBar: AnimatedContainer(
+        height: _height,
+        duration: const Duration(milliseconds: 300),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 20,
+              color: Colors.black.withOpacity(.1),
+            )
           ],
-        ));
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+            child: GNav(
+              // rippleColor: Colors.grey[300]!,
+              // hoverColor: Colors.grey[100]!,
+              backgroundColor: Colors.black,
+              gap: 8,
+              activeColor: Colors.white,
+              iconSize: 24,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              duration: const Duration(milliseconds: 500),
+              tabBackgroundColor: const Color.fromARGB(255, 58, 58, 58),
+              color: Colors.white,
+              tabBackgroundGradient: const LinearGradient(
+                colors: [
+                  Color.fromARGB(73, 41, 140, 245),
+                  Color.fromARGB(73, 143, 102, 224),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              tabs: const [
+                GButton(
+                  icon: Icons.folder_copy_outlined,
+                  text: 'Kategóriák',
+                  borderRadius: BorderRadius.all(Radius.circular(5)),
+                  iconActiveColor: Color.fromARGB(255, 41, 140, 245),
+                  textColor: Color.fromARGB(255, 41, 140, 245),
+                  backgroundColor: Color.fromARGB(73, 41, 140, 245),
+                ),
+                GButton(
+                  icon: Icons.inventory_2_outlined,
+                  text: 'Tárgyak',
+                  borderRadius: BorderRadius.all(Radius.circular(5)),
+                  iconActiveColor: Color.fromARGB(255, 143, 102, 224),
+                  textColor: Color.fromARGB(255, 143, 102, 224),
+                  backgroundColor: Color.fromARGB(73, 143, 102, 224),
+                ),
+              ],
+              selectedIndex: pageIndex,
+              onTabChange: (index) {
+                setState(() {
+                  pageIndex = index;
+                });
+              },
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
