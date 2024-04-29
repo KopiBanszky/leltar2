@@ -171,72 +171,78 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ),
       ),
-      bottomNavigationBar: AnimatedContainer(
-        height: _height,
-        duration: const Duration(milliseconds: 300),
-        decoration: BoxDecoration(
-          color: Colors.black,
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 20,
-              color: Colors.black.withOpacity(.1),
-            )
-          ],
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
-            child: GNav(
-              // rippleColor: Colors.grey[300]!,
-              // hoverColor: Colors.grey[100]!,
-              backgroundColor: Colors.black,
-              gap: 8,
-              activeColor: Colors.white,
-              iconSize: 24,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              duration: const Duration(milliseconds: 500),
-              tabBackgroundColor: const Color.fromARGB(255, 58, 58, 58),
-              color: Colors.white,
-              tabBackgroundGradient: const LinearGradient(
-                colors: [
-                  Color.fromARGB(73, 41, 140, 245),
-                  Color.fromARGB(73, 143, 102, 224),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              tabs: const [
-                GButton(
-                  icon: Icons.folder_copy_outlined,
-                  text: 'Kategóriák',
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  iconActiveColor: Color.fromARGB(255, 41, 140, 245),
-                  textColor: Color.fromARGB(255, 41, 140, 245),
-                  backgroundColor: Color.fromARGB(73, 41, 140, 245),
-                ),
-                GButton(
-                  icon: Icons.inventory_2_outlined,
-                  text: 'Tárgyak',
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  iconActiveColor: Color.fromARGB(255, 143, 102, 224),
-                  textColor: Color.fromARGB(255, 143, 102, 224),
-                  backgroundColor: Color.fromARGB(73, 143, 102, 224),
-                ),
-              ],
-              selectedIndex: pageIndex,
-              onTabChange: (index) {
-                setState(() {
-                  pageIndex = index;
-                });
-              },
+      bottomNavigationBar: DraggableScrollableSheet(
+        initialChildSize: 0.1,
+        minChildSize: 0.1,
+        maxChildSize: 0.9,
+        builder: (context, scrollController){ 
+          return AnimatedContainer(
+          height: _height,
+          duration: const Duration(milliseconds: 300),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 20,
+                color: Colors.black.withOpacity(.1),
+              )
+            ],
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
           ),
-        ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+              child: GNav(
+                // rippleColor: Colors.grey[300]!,
+                // hoverColor: Colors.grey[100]!,
+                backgroundColor: Colors.black,
+                gap: 8,
+                activeColor: Colors.white,
+                iconSize: 24,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                duration: const Duration(milliseconds: 500),
+                tabBackgroundColor: const Color.fromARGB(255, 58, 58, 58),
+                color: Colors.white,
+                tabBackgroundGradient: const LinearGradient(
+                  colors: [
+                    Color.fromARGB(73, 41, 140, 245),
+                    Color.fromARGB(73, 143, 102, 224),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                tabs: const [
+                  GButton(
+                    icon: Icons.folder_copy_outlined,
+                    text: 'Kategóriák',
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                    iconActiveColor: Color.fromARGB(255, 41, 140, 245),
+                    textColor: Color.fromARGB(255, 41, 140, 245),
+                    backgroundColor: Color.fromARGB(73, 41, 140, 245),
+                  ),
+                  GButton(
+                    icon: Icons.inventory_2_outlined,
+                    text: 'Tárgyak',
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                    iconActiveColor: Color.fromARGB(255, 143, 102, 224),
+                    textColor: Color.fromARGB(255, 143, 102, 224),
+                    backgroundColor: Color.fromARGB(73, 143, 102, 224),
+                  ),
+                ],
+                selectedIndex: pageIndex,
+                onTabChange: (index) {
+                  setState(() {
+                    pageIndex = index;
+                  });
+                },
+              ),
+            ),
+          ),
+        );},
       ),
     );
   }
