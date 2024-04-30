@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:leltar_2/components/ListItem.dart';
 import 'package:leltar_2/components/WidgetItem.dart';
 import 'package:leltar_2/components/largeItem.dart';
+import 'package:leltar_2/components/settingsDialog.dart';
+import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/functions/http/http.dart';
 import 'package:leltar_2/functions/itembuilder.dart';
-
-enum ItemType { WIDGET, LIST, LARGE }
 
 class Category {
   final int id;
@@ -46,11 +46,16 @@ class Category {
     );
   }
 
-  Widget display(BuildContext context,
-      {ItemType type = ItemType.LARGE, Function()? onPressed}) {
+  Widget display(
+    BuildContext context, {
+    ItemType type = ItemType.LARGE,
+    Function()? onPressed,
+    SettingsDialog? settings,
+  }) {
     onPressed ??= () {
       Navigator.pushNamed(context, "/", arguments: {
         "route": "${path == "default" ? "" : path}${id}_",
+        "settings": settings,
         "name": name,
         "id": id
       });
@@ -59,23 +64,25 @@ class Category {
       return LargeItem(
         name: name,
         description: description,
-        onPressed: onPressed,
+        onPressed: onPressed as dynamic Function(),
         icon: icon,
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
         name: name,
         description: description,
-        onPressed: onPressed,
+        onPressed: onPressed as dynamic Function(),
         icon: icon,
       );
-    } else {
+    } else if (type == ItemType.WIDGET) {
       return WidgetItem(
         name: name,
         description: description,
-        onPressed: onPressed,
+        onPressed: onPressed as dynamic Function(),
         icon: icon,
       );
+    } else {
+      return const SizedBox();
     }
   }
 }
@@ -253,10 +260,15 @@ class Categories {
     double width = 300,
     double paddingBottom = 10,
     double paddingTop = 10,
+    SettingsDialog? settings,
   }) {
     List<Widget> _elements = [];
     for (var item in items) {
-      _elements.add(item.display(context, type: type));
+      _elements.add(item.display(
+        context,
+        type: type,
+        settings: settings,
+      ));
     }
     return ItemBuilder(
       key: ValueKey<DateTime>(DateTime.now()),

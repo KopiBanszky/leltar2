@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
+import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/pages/HomaPage.dart';
 
 class PageViewerWithIndicatorController {

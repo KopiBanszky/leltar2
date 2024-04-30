@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:leltar_2/components/ListItem.dart';
 import 'package:leltar_2/components/WidgetItem.dart';
 import 'package:leltar_2/components/largeItem.dart';
+import 'package:leltar_2/components/settingsDialog.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
+import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/functions/http/http.dart';
 import 'package:leltar_2/functions/itembuilder.dart';
 
@@ -94,71 +96,60 @@ class Item {
   }
 
   Widget display(BuildContext context,
-      {ItemType type = ItemType.LARGE, Function()? onPressed}) {
+      {ItemType type = ItemType.LARGE,
+      Function()? onPressed,
+      SettingsDialog? settings}) {
     onPressed ??= () {
       Navigator.pushNamed(
         context,
         "/item",
-        arguments: {"item": this},
+        arguments: {
+          "item": this,
+          "settings": settings,
+        },
       );
     };
     if (type == ItemType.LARGE) {
-      bool hasImage = index["large"] != null && index["large"] != "";
-      if (hasImage) {
-        return LargeItem(
-          name: name,
-          description: description,
-          onPressed: onPressed,
-          image: Image(
-            image: NetworkImage(index["large"] ?? ""),
-          ),
-        );
-      } else {
-        return LargeItem(
-          name: name,
-          description: description,
-          onPressed: onPressed,
-          icon: Icons.open_in_new_outlined,
-        );
-      }
+      return LargeItem(
+        name: name,
+        description: description,
+        onPressed: onPressed as dynamic Function(),
+        image: index[type.toString().split(".")[1].toLowerCase()] == ""
+            ? null
+            : Image(
+                image: NetworkImage(
+                    index[type.toString().split(".")[1].toLowerCase()] ?? ""),
+              ),
+        icon: Icons.inventory_2_outlined,
+      );
     } else if (type == ItemType.LIST) {
-      bool hasImage = index["list"] != null && index["list"] != "";
-      if (hasImage) {
-        return ListItem(
-          name: name,
-          description: description,
-          onPressed: onPressed,
-          image: Image(
-            image: NetworkImage(index["list"] ?? ""),
-          ),
-        );
-      } else {
-        return ListItem(
-          name: name,
-          description: description,
-          onPressed: onPressed,
-          icon: Icons.open_in_new_outlined,
-        );
-      }
+      return ListItem(
+        name: name,
+        description: description,
+        onPressed: onPressed as dynamic Function(),
+        image: index[type.toString().split(".")[1].toLowerCase()] == ""
+            ? null
+            : Image(
+                image: NetworkImage(
+                    index[type.toString().split(".")[1].toLowerCase()] ?? ""),
+              ),
+        icon: Icons.inventory_2_outlined,
+      );
+    } else if (type == ItemType.WIDGET) {
+      return WidgetItem(
+        name: name,
+        description: description,
+        onPressed: onPressed as dynamic Function(),
+        image: index[type.toString().split(".")[1].toLowerCase()] == ""
+            ? null
+            : Image(
+                image: NetworkImage(
+                    index[type.toString().split(".")[1].toLowerCase()] ?? ""),
+              ),
+        icon: Icons.inventory_2_outlined,
+      );
     } else {
-      bool hasImage = index["widget"] != null && index["widget"] != "";
-      if (hasImage) {
-        return WidgetItem(
-          name: name,
-          description: description,
-          onPressed: onPressed,
-          image: Image(
-            image: NetworkImage(index["widget"] ?? ""),
-          ),
-        );
-      } else {
-        return WidgetItem(
-          name: name,
-          description: description,
-          onPressed: onPressed,
-          icon: Icons.open_in_new_outlined,
-        );
-      }
+      return const SizedBox();
     }
   }
 
@@ -357,10 +348,11 @@ class Items {
     double width = 300,
     double paddingBottom = 10,
     double paddingTop = 10,
+    SettingsDialog? settings,
   }) {
     List<Widget> elements = [];
     for (var item in items) {
-      elements.add(item.display(context, type: type));
+      elements.add(item.display(context, type: type, settings: settings));
       // print(item.name);
     }
     return ItemBuilder(
