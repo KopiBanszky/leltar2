@@ -10,11 +10,11 @@ class RquestResult {
   RquestResult(this.data, this.ok);
 }
 
-const PROTOCOL = "http";
-const PROTOCOLL_METHOD = Uri.http;
-// const DOMAIN = "amogus.439boldogasszony.hu";
+const PROTOCOL = "https";
+const PROTOCOLL_METHOD = Uri.https;
+const DOMAIN = "app.439boldogasszony.hu";
 // const DOMAIN = "192.168.1.69";
-const DOMAIN = "192.168.0.77:9081";
+// const DOMAIN = "192.168.0.77:9081";
 
 Future<RquestResult> http_get(String route, [dynamic data]) async {
   //var dataStr = jsonEncode(data);//.replaceAll(":", "=").replaceAll(",", "&").replaceAll("{", "").replaceAll("}", "");

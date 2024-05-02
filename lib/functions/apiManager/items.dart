@@ -92,6 +92,7 @@ class Item {
           index["large"] = image;
         }
     }
+    print("index: $index");
     return index;
   }
 
@@ -166,6 +167,7 @@ class Item {
 
 class Items {
   late List<Item> items = [];
+  int loadedIndexes = 0;
 
   Future<List<Item>> getItems(
     String path, {
@@ -185,7 +187,14 @@ class Items {
       limit: limit,
       offset: offset,
       updateOnLoad: updateOnLoad,
-      onLoad: onLoad,
+      onLoad: () {
+        if(updateOnLoad){
+          loadedIndexes++;
+          if(loadedIndexes == items.length){
+            onLoad?.call();
+          }
+        }
+      },
     );
     return items;
   }
