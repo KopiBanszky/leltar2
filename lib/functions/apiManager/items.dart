@@ -114,7 +114,8 @@ class Item {
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
-        image: index[type.toString().split(".")[1].toLowerCase()] == ""
+        image: index[type.toString().split(".")[1].toLowerCase()] == "" ||
+                index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
                 image: NetworkImage(
@@ -127,7 +128,8 @@ class Item {
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
-        image: index[type.toString().split(".")[1].toLowerCase()] == ""
+        image: index[type.toString().split(".")[1].toLowerCase()] == "" ||
+                index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
                 image: NetworkImage(
@@ -140,7 +142,8 @@ class Item {
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
-        image: index[type.toString().split(".")[1].toLowerCase()] == ""
+        image: index[type.toString().split(".")[1].toLowerCase()] == "" ||
+                index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
                 image: NetworkImage(
@@ -166,6 +169,7 @@ class Item {
 
 class Items {
   late List<Item> items = [];
+  int loadedIndexes = 0;
 
   Future<List<Item>> getItems(
     String path, {
@@ -185,7 +189,15 @@ class Items {
       limit: limit,
       offset: offset,
       updateOnLoad: updateOnLoad,
-      onLoad: onLoad,
+      onLoad: () {
+        if (updateOnLoad) {
+          loadedIndexes++;
+          if (loadedIndexes == items.length) {
+            print("Items loaded: ${items.length}");
+            onLoad?.call();
+          }
+        }
+      },
     );
     return items;
   }

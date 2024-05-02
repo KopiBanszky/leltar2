@@ -51,6 +51,7 @@ class ListItem extends StatelessWidget {
             end: Alignment.topRight,
           ),
         ),
+        padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
         width: MediaQuery.sizeOf(context).width * .9,
         height: 55,
         child: Row(

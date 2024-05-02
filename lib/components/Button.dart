@@ -13,6 +13,12 @@ class Button extends StatelessWidget {
     this.duration,
     this.padding,
     this.backgroundGradient,
+    this.disabled,
+    this.disabledBorderColor,
+    this.disabledTextColor,
+    this.disabledBackgroundGradient,
+    this.width,
+    this.spacing,
   });
 
   final Function() onPressed;
@@ -25,18 +31,29 @@ class Button extends StatelessWidget {
   final int? duration;
   final EdgeInsetsGeometry? padding;
   final Gradient? backgroundGradient;
+  final bool? disabled;
+  final Color? disabledBorderColor;
+  final Color? disabledTextColor;
+  final Gradient? disabledBackgroundGradient;
+  final double? width;
+  final MainAxisAlignment? spacing;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: Duration(milliseconds: duration ?? 200),
+      width: width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: borderColor ?? Colors.white, width: 1),
-        gradient: backgroundGradient,
+        border: Border.all(
+            color: (disabled ?? false ? disabledBorderColor : borderColor) ??
+                Colors.white,
+            width: 1),
+        gradient:
+            disabled ?? false ? disabledBackgroundGradient : backgroundGradient,
       ),
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: disabled ?? false ? onPressed : onPressed,
         style: ElevatedButton.styleFrom(
           // side: BorderSide(color: borderColor ?? Colors.white, width: 1),
           backgroundColor: Colors.transparent,
@@ -52,18 +69,23 @@ class Button extends StatelessWidget {
           padding: padding ?? const EdgeInsets.all(10),
           child: icon != null
               ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  // mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: spacing ?? MainAxisAlignment.center,
                   children: [
                     Icon(
                       icon,
-                      color: textColor ?? Colors.white,
-                      size: fontSize ?? 20,
+                      color:
+                          (disabled ?? false ? disabledTextColor : textColor) ??
+                              Colors.white,
+                      size: (fontSize ?? 20) + (text == "" ? 0 : 8),
                     ),
                     Text(
                       text ?? "",
                       style: TextStyle(
-                        color: textColor ?? Colors.white,
+                        color: (disabled ?? false
+                                ? disabledTextColor
+                                : textColor) ??
+                            Colors.white,
                         fontSize: fontSize ?? 20,
                       ),
                     ),
@@ -72,7 +94,9 @@ class Button extends StatelessWidget {
               : Text(
                   text ?? "",
                   style: TextStyle(
-                    color: textColor ?? Colors.white,
+                    color:
+                        (disabled ?? false ? disabledTextColor : textColor) ??
+                            Colors.white,
                     fontSize: fontSize ?? 20,
                   ),
                 ),

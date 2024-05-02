@@ -1,7 +1,10 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/components/appBar.dart';
 import 'package:leltar_2/components/drawer.dart';
 import 'package:leltar_2/components/searchbar.dart';
@@ -35,7 +38,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   ScrollController _scrollController = ScrollController();
 
-  double _height = 90.0;
+  double INITIALHEIGHT = 80.0;
+  double _height = 80.0;
 
   int pageIndex = 0;
 
@@ -51,7 +55,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         settings: settings,
       );
       if (categories.items.isEmpty) pageIndex = 1;
-      _height = 90.0;
+      _height = INITIALHEIGHT;
       setState(() {});
     }
   }
@@ -67,7 +71,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         paddingTop: 5,
         settings: settings,
       );
-      _height = 90.0;
+      _height = INITIALHEIGHT;
       setState(() {});
     }
   }
@@ -152,11 +156,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               if (appBar.setScrollStatus(scrollNotification.metrics.pixels)) {
                 setState(() {});
               }
-              if (scrollNotification.metrics.pixels <= 90) {
+              if (scrollNotification.metrics.pixels <= 250) {
                 if (_height == 250.0) {
                   setState(() {
                     _scrollController.jumpTo(0.0);
-                    _height = 90.0;
+                    _height = INITIALHEIGHT;
                   });
                 }
                 return true;
@@ -164,16 +168,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               if (scrollNotification.scrollDelta! < 0.0) {
                 if (_height <= 0.0) {
                   setState(() {
-                    _height = 90.0;
+                    _height = INITIALHEIGHT;
                   });
                 }
-              } else if (_height == 90.0) {
+              } else if (_height == INITIALHEIGHT) {
                 setState(() {
+                  print("bruh?");
                   _height = 0.0;
                 });
               } else if (_height == 250.0) {
                 setState(() {
-                  _height = 90.0;
+                  _height = INITIALHEIGHT;
                 });
               }
             }
@@ -212,15 +217,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               surfaceTintColor: Colors.transparent,
               disabledBackgroundColor: Colors.transparent,
               disabledForegroundColor: Colors.transparent,
-              maximumSize: const Size.fromHeight(70),
+              // maximumSize: const Size.fromHeight(70),
               alignment: Alignment.topCenter,
             ),
             onPressed: () {
               setState(() {
-                if (_height == 90.0) {
+                if (_height == INITIALHEIGHT) {
                   _height = 250.0;
                 } else {
-                  _height = 90.0;
+                  _height = INITIALHEIGHT;
                 }
               });
             },
@@ -288,6 +293,64 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         });
                       },
                     ),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Button(
+                        onPressed: () {}, //TODO: page index
+                        text: "Új",
+                        icon: pageIndex == 0
+                            ? Icons.create_new_folder_outlined
+                            : Icons.add_circle_outline,
+                        fontSize: 16,
+                        padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+                        textColor: Colors.green,
+                        borderColor: Colors.green,
+                        spacing: MainAxisAlignment.spaceEvenly,
+                        width: MediaQuery.of(context).size.width * 0.2,
+                      ),
+                      Button(
+                        onPressed: () {},
+                        text: "Szerkesztés",
+                        icon: Icons.edit_outlined,
+                        fontSize: 16,
+                        padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                        textColor: Colors.blue,
+                        borderColor: Colors.blue,
+                        spacing: MainAxisAlignment.spaceAround,
+                        width: MediaQuery.of(context).size.width * 0.4,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 25),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Button(
+                        onPressed: () {},
+                        text: "Törlés",
+                        icon: Icons.folder_delete_outlined,
+                        fontSize: 15,
+                        padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+                        textColor: Colors.red,
+                        borderColor: Colors.red,
+                        spacing: MainAxisAlignment.spaceEvenly,
+                        width: MediaQuery.of(context).size.width * 0.25,
+                      ),
+                      Button(
+                        onPressed: () {},
+                        text: "Áthelyezés",
+                        icon: Icons.drive_file_move_outline,
+                        fontSize: 16,
+                        padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                        textColor: Colors.orange,
+                        borderColor: Colors.orange,
+                        spacing: MainAxisAlignment.spaceAround,
+                        width: MediaQuery.of(context).size.width * 0.35,
+                      ),
+                    ],
                   ),
                 ],
               ),

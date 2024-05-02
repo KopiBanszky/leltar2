@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
@@ -90,6 +91,13 @@ class SettingsDialog {
         );
       },
     );
+    newCategoryType = categoryType;
+    newItemType = itemType;
+    newOrder = order;
+    newOrderBy = orderBy;
+    newColumns = columns;
+    newOldSchool = oldSchool;
+
     return true;
   }
 
@@ -149,8 +157,12 @@ class _StDInnerState extends State<StDInner> {
       padding: const EdgeInsets.fromLTRB(50.0, 70, 50, 70),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 19, 19, 19),
+          color: Color.fromARGB(255, 24, 24, 24),
           borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: Color.fromARGB(150, 143, 102, 224),
+            width: 1,
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -184,6 +196,60 @@ class _StDInnerState extends State<StDInner> {
                         Navigator.pop(context);
                       },
                     ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(3, 0, 0, 0),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 25,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Text(
+                      "Old School",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 0, 5, 0),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: Switch(
+                                value: settingsDialog.newOldSchool,
+                                onChanged: (value) {
+                                  setState(() {
+                                    settingsDialog
+                                        .setCategoryType(ItemType.LIST);
+                                    settingsDialog.setItemType(ItemType.LIST);
+                                    settingsDialog.setOldSchool(value);
+                                  });
+                                },
+                                activeColor: Colors.orange,
+                                activeTrackColor:
+                                    const Color.fromARGB(151, 228, 144, 19),
+                                inactiveThumbColor:
+                                    const Color.fromARGB(130, 41, 140, 245),
+                                inactiveTrackColor:
+                                    const Color.fromARGB(150, 143, 102, 224),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -237,6 +303,7 @@ class _StDInnerState extends State<StDInner> {
                   Button(
                     onPressed: () {
                       setState(() {
+                        settingsDialog.setOldSchool(false);
                         settingsDialog.setCategoryType(ItemType.WIDGET);
                       });
                     },
@@ -255,10 +322,15 @@ class _StDInnerState extends State<StDInner> {
                         ? Colors.white
                         : const Color.fromARGB(255, 41, 140, 245),
                     duration: 200,
+                    disabled: settingsDialog.newOldSchool,
+                    disabledBorderColor:
+                        const Color.fromARGB(255, 107, 107, 107),
+                    disabledTextColor: Colors.grey,
                   ),
                   Button(
                     onPressed: () {
                       setState(() {
+                        settingsDialog.setOldSchool(false);
                         settingsDialog.setCategoryType(ItemType.LARGE);
                       });
                     },
@@ -277,6 +349,10 @@ class _StDInnerState extends State<StDInner> {
                         ? Colors.white
                         : const Color.fromARGB(255, 41, 140, 245),
                     duration: 200,
+                    disabled: settingsDialog.newOldSchool,
+                    disabledBorderColor:
+                        const Color.fromARGB(255, 107, 107, 107),
+                    disabledTextColor: Colors.grey,
                   ),
                 ],
               ),
@@ -333,6 +409,7 @@ class _StDInnerState extends State<StDInner> {
                   Button(
                     onPressed: () {
                       setState(() {
+                        settingsDialog.setOldSchool(false);
                         settingsDialog.setItemType(ItemType.WIDGET);
                       });
                     },
@@ -350,10 +427,15 @@ class _StDInnerState extends State<StDInner> {
                         ? Colors.white
                         : const Color.fromARGB(255, 143, 102, 224),
                     duration: 200,
+                    disabled: settingsDialog.newOldSchool,
+                    disabledBorderColor:
+                        const Color.fromARGB(255, 107, 107, 107),
+                    disabledTextColor: Colors.grey,
                   ),
                   Button(
                     onPressed: () {
                       setState(() {
+                        settingsDialog.setOldSchool(false);
                         settingsDialog.setItemType(ItemType.LARGE);
                       });
                     },
@@ -371,38 +453,48 @@ class _StDInnerState extends State<StDInner> {
                         ? Colors.white
                         : const Color.fromARGB(255, 143, 102, 224),
                     duration: 200,
+                    disabled: settingsDialog.newOldSchool,
+                    disabledBorderColor:
+                        const Color.fromARGB(255, 107, 107, 107),
+                    disabledTextColor: Colors.grey,
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 160, 10, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Button(
-                      onPressed: () {
-                        setState(() {
-                          settingsDialog.apply(context);
-                        });
-                      },
-                      icon: Icons.save_rounded,
-                      fontSize: 30,
-                      padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
-                      backgroundGradient: const LinearGradient(
-                        colors: [
-                          Color.fromARGB(14, 41, 245, 51),
-                          Color.fromARGB(115, 13, 219, 13),
-                        ],
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight,
-                      ),
-                      borderColor: const Color.fromARGB(87, 255, 255, 255),
-                      textColor: Colors.white,
-                      duration: 500,
+              Expanded(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Button(
+                          onPressed: () {
+                            setState(() {
+                              settingsDialog.apply(context);
+                            });
+                          },
+                          icon: Icons.save_rounded,
+                          fontSize: 30,
+                          padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+                          backgroundGradient: const LinearGradient(
+                            colors: [
+                              Color.fromARGB(14, 41, 245, 51),
+                              Color.fromARGB(115, 13, 219, 13),
+                            ],
+                            begin: Alignment.bottomLeft,
+                            end: Alignment.topRight,
+                          ),
+                          borderColor: const Color.fromARGB(87, 255, 255, 255),
+                          textColor: Colors.white,
+                          duration: 500,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                ],
+              )),
             ],
           ),
         ),
