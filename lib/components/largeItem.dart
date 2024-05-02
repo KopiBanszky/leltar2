@@ -133,17 +133,17 @@ class LargeItem extends StatelessWidget {
             ),
           ),
         ),
-        Positioned(
-          top: 0,
-          right: 0,
-          child: IconButton(
-            icon: const Icon(
-              Icons.check_circle,
-              color: Colors.white,
-            ),
-            onPressed: onPressed,
-          ),
-        ),
+        // Positioned(
+        //   top: 0,
+        //   right: 0,
+        //   child: IconButton(
+        //     icon: const Icon(
+        //       Icons.check_circle,
+        //       color: Colors.white,
+        //     ),
+        //     onPressed: onPressed,
+        //   ),
+        // ),
       ],
     );
   }

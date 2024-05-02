@@ -55,7 +55,7 @@ class ListItem extends StatelessWidget {
         height: 55,
         child: Row(
           children: [
-            Container(
+            SizedBox(
               width: MediaQuery.sizeOf(context).width * .135,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(5.0, 5, 5, 5),
@@ -121,14 +121,14 @@ class ListItem extends StatelessWidget {
                 ),
               ),
             ),
-            IconButton(
-              onPressed: onPressed,
-              icon: Icon(
-                Icons.check_circle,
-                color: Colors.grey,
-                size: 20,
-              ),
-            ),
+            // IconButton(
+            //   onPressed: onPressed,
+            //   icon: const Icon(
+            //     Icons.check_circle,
+            //     color: Colors.grey,
+            //     size: 20,
+            //   ),
+            // ),
           ],
         ),
       ),
