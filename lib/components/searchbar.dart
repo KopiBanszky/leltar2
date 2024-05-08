@@ -133,11 +133,14 @@ class _SearchbarState extends State<Searchbar> {
                 ),
                 onPressed: moreFunction,
                 child: moreIcon == null
-                    ? const Image(
-                        image: AssetImage(
-                          "assets/439logo_nobg.png",
+                    ? const Padding(
+                      padding:  EdgeInsets.all(4.0),
+                      child:  Image(
+                          image: AssetImage(
+                            "assets/439logo_nobg.png",
+                          ),
                         ),
-                      )
+                    )
                     : Icon(
                         moreIcon,
                         color: Colors.white,
