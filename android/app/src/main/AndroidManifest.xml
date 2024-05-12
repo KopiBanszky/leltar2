@@ -3,7 +3,7 @@
     <application
         android:label="leltar_2"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/logo_nobg"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
