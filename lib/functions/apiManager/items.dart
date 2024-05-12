@@ -336,7 +336,7 @@ class Items {
         } else {
           return b.finalID.compareTo(a.finalID);
         }
-      } else if (orderBy == SortBy.CREATED) {
+      } else if (orderBy == SortBy.EDITED) {
         if (order == Order.ASC) {
           return a.created.compareTo(b.created);
         } else {

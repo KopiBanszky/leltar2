@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:leltar_2/components/Button.dart';
+import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/pages/HomaPage.dart';
 
 class SettingsDialog {
   late ItemType itemType;
   late ItemType categoryType;
-  late String order;
-  late String orderBy;
+  late Order order;
+  late SortBy orderBy;
   late int columns;
   late bool oldSchool;
 
@@ -25,8 +26,8 @@ class SettingsDialog {
 
   late ItemType newItemType = itemType;
   late ItemType newCategoryType = categoryType;
-  late String newOrder = order;
-  late String newOrderBy = orderBy;
+  late Order newOrder = order;
+  late SortBy newOrderBy = orderBy;
   late int newColumns = columns;
   late bool newOldSchool = oldSchool;
 
@@ -46,19 +47,23 @@ class SettingsDialog {
     return oldSchool;
   }
 
-  void setOrder(String order) {
+  void setOrder(Order order) {
     newOrder = order;
   }
 
-  String getOrder() {
+  void toggleOrder() {
+    newOrder = newOrder == Order.ASC ? Order.DESC : Order.ASC;
+  }
+
+  Order getOrder() {
     return order;
   }
 
-  void setOrderBy(String orderBy) {
+  void setOrderBy(SortBy orderBy) {
     newOrderBy = orderBy;
   }
 
-  String getOrderBy() {
+  SortBy getOrderBy() {
     return orderBy;
   }
 
@@ -154,7 +159,7 @@ class _StDInnerState extends State<StDInner> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(50.0, 70, 50, 70),
+      padding: const EdgeInsets.fromLTRB(56.0, 70, 60, 50),
       child: Container(
         decoration: BoxDecoration(
           color: Color.fromARGB(255, 24, 24, 24),
@@ -381,6 +386,7 @@ class _StDInnerState extends State<StDInner> {
                   ),
                 ],
               ),
+
               const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -459,6 +465,204 @@ class _StDInnerState extends State<StDInner> {
                     disabledTextColor: Colors.grey,
                   ),
                 ],
+              ),
+              const SizedBox(
+                height: 25,
+              ),
+              
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.swap_vert,
+                    size: 25,
+                    color: Color.fromARGB(255, 102, 224, 169),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    "Rendezés ",
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: (MediaQuery.of(context).size.width >= 625 ? MediaQuery.of(context).size.width * .074: 0)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Button(
+                          onPressed:  () {
+                            setState(() {
+                              settingsDialog.setOrderBy(SortBy.NAME);
+                            });
+                          },
+                          icon: Icons.sort_by_alpha_rounded,
+                          fontSize: 30,
+                          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                          backgroundGradient:
+                              settingsDialog.newOrderBy == SortBy.NAME
+                                  ? focused
+                                  : unFocused,
+                          borderColor: settingsDialog.newOrderBy != SortBy.NAME
+                              ? Colors.white
+                              : const Color.fromARGB(130,102, 224, 169),
+                          textColor: settingsDialog.newOrderBy != SortBy.NAME
+                              ? Colors.white
+                              : const Color.fromARGB(200,102, 224, 169),
+                          duration: 200,
+                          disabledBorderColor:
+                              const Color.fromARGB(255, 107, 107, 107),
+                          disabledTextColor: Colors.grey,
+                        ),
+                        Button(
+                          onPressed: () {
+                            setState(() {
+                              settingsDialog.setOrderBy(SortBy.ID);
+                            });
+                          },
+                          icon: Icons.update,
+                          fontSize: 30,
+                          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                          backgroundGradient:
+                              settingsDialog.newOrderBy == SortBy.ID
+                                  ? focused
+                                  : unFocused,
+                          borderColor: settingsDialog.newOrderBy != SortBy.ID
+                              ? Colors.white
+                              : const Color.fromARGB(130, 102, 224, 169),
+                          textColor: settingsDialog.newOrderBy != SortBy.ID
+                              ? Colors.white
+                              : const Color.fromARGB(200, 102, 224, 169),
+                          duration: 200,
+                          disabledBorderColor:
+                              const Color.fromARGB(255, 107, 107, 107),
+                          disabledTextColor: Colors.grey,
+                        ),
+                        Button(
+                          onPressed: () {
+                            setState(() {
+                              settingsDialog.setOrderBy(SortBy.EDITED);
+                            });
+                          },
+                          icon: Icons.edit_square,
+                          fontSize: 30,
+                          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                          backgroundGradient:
+                              settingsDialog.newOrderBy == SortBy.EDITED
+                                  ? focused
+                                  : unFocused,
+                          borderColor: settingsDialog.newOrderBy != SortBy.EDITED
+                              ? Colors.white
+                              : const Color.fromARGB(130, 102, 224, 169),
+                          textColor: settingsDialog.newOrderBy != SortBy.EDITED
+                              ? Colors.white
+                              : const Color.fromARGB(200, 102, 224, 169),
+                          duration: 200,
+                          disabledBorderColor:
+                              const Color.fromARGB(255, 107, 107, 107),
+                          disabledTextColor: Colors.grey,
+                        ),
+                        if(MediaQuery.of(context).size.width >= 625) const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 30.0),
+                          child: SizedBox(
+                            width: 10,
+                          ),
+                        ),
+                        if(MediaQuery.of(context).size.width >= 625) Button(
+                          onPressed: () {
+                            setState(() {
+                              settingsDialog.toggleOrder();
+                            });
+                          },
+                          width: 82.5,
+                          icon: settingsDialog.newOrder != Order.ASC ?
+                                Icons.arrow_upward_rounded : 
+                                Icons.arrow_downward_rounded,
+                          fontSize: 30,
+                          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                          backgroundGradient:
+                              settingsDialog.newOrder != Order.ASC ?
+                                const LinearGradient(
+                                  colors: [
+                                    Color.fromARGB(73, 102, 224, 169),
+                                    Color.fromARGB(73, 41, 140, 245),
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                )
+                                : 
+                                const LinearGradient(
+                                  colors: [
+                                    Color.fromARGB(73, 102, 224, 169),
+                                    Color.fromARGB(73, 41, 140, 245),
+                                  ],
+                                  end: Alignment.topCenter,
+                                  begin: Alignment.bottomCenter,
+                                ),
+                          borderColor: settingsDialog.newOrder == Order.ASC
+                              ? const Color.fromARGB(73, 41, 140, 245)
+                              : const Color.fromARGB(73, 102, 224, 169),
+                          textColor: settingsDialog.newOrder != Order.ASC
+                              ? const Color.fromARGB(200, 41, 140, 245)
+                              : const Color.fromARGB(200, 102, 224, 169),
+                          duration: 200,
+                        ),
+                      ],
+                    ),
+                    if(MediaQuery.of(context).size.width < 625) Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+                      child: Button(
+                        onPressed: () {
+                          setState(() {
+                            settingsDialog.toggleOrder();
+                          });
+                        },
+                        width: 82.5,
+                        icon: settingsDialog.newOrder != Order.ASC ?
+                              Icons.arrow_upward_rounded : 
+                              Icons.arrow_downward_rounded,
+                        fontSize: 30,
+                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                        backgroundGradient:
+                            settingsDialog.newOrder != Order.ASC ?
+                              const LinearGradient(
+                                colors: [
+                                  Color.fromARGB(73, 102, 224, 169),
+                                  Color.fromARGB(73, 41, 140, 245),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              )
+                              : 
+                              const LinearGradient(
+                                colors: [
+                                  Color.fromARGB(73, 102, 224, 169),
+                                  Color.fromARGB(73, 41, 140, 245),
+                                ],
+                                end: Alignment.topCenter,
+                                begin: Alignment.bottomCenter,
+                              ),
+                        borderColor: settingsDialog.newOrder == Order.ASC
+                            ? const Color.fromARGB(73, 41, 140, 245)
+                            : const Color.fromARGB(73, 102, 224, 169),
+                        textColor: settingsDialog.newOrder != Order.ASC
+                            ? const Color.fromARGB(200, 41, 140, 245)
+                            : const Color.fromARGB(200, 102, 224, 169),
+                        duration: 200,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Expanded(
                   child: Column(

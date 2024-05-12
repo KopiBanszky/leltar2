@@ -87,9 +87,34 @@ class Category {
   }
 }
 
-enum SortBy { NAME, CREATED, ID }
+enum SortBy { NAME, EDITED, ID }
 
 enum Order { ASC, DESC }
+
+class ToStr{
+  static String sortBy(SortBy sortBy){
+    if(sortBy == SortBy.NAME){
+      return "name";
+    }else if(sortBy == SortBy.EDITED){
+      return "timestamp";
+    }else if(sortBy == SortBy.ID){
+      return "finalID";
+    }else{
+      return "name";
+    }
+  }
+
+  static String order(Order order){
+    if(order == Order.ASC){
+      return "ASC";
+    }else if(order == Order.DESC){
+      return "DESC";
+    }else{
+      return "ASC";
+    }
+  }
+
+}
 
 class Categories {
   late List<Category> items = [];
@@ -236,7 +261,7 @@ class Categories {
         } else {
           return b.finalID.compareTo(a.finalID);
         }
-      } else if (orderBy == SortBy.CREATED) {
+      } else if (orderBy == SortBy.EDITED) {
         if (order == Order.ASC) {
           return a.created.compareTo(b.created);
         } else {

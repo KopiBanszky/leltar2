@@ -83,8 +83,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         SettingsDialog(
           itemType: ItemType.LARGE,
           categoryType: ItemType.LARGE,
-          order: "ASC",
-          orderBy: "create",
+          order: Order.ASC,
+          orderBy: SortBy.ID,
           columns: 1,
           oldSchool: false,
         );
@@ -99,8 +99,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               }
             : null,
         moreFunction: () {
+          Order currentOrder = settings!.order;
+          SortBy currentOrderBy = settings!.orderBy;
           settings!.display(context).then((value) {
             if (value) {
+              if(currentOrderBy != settings!.getOrderBy() || currentOrder != settings!.getOrder()){
+                items.sortItemsBy(settings!.getOrderBy(), settings!.getOrder());
+                categories.sortItemsBy(settings!.getOrderBy(), settings!.getOrder());
+              }
               loadItems();
               loadCategories();
             }
@@ -111,12 +117,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (categories.items.isEmpty) {
       await categories.getCategories(
         arguments?["route"] ?? "default",
+        order: ToStr.order(settings!.order),
+        orderBy: ToStr.sortBy(settings!.orderBy),
       );
     }
     loadCategories();
 
     if (items.items.isEmpty) {
-      await items.getItems(arguments?["route"] ?? "default", updateOnLoad: true,
+      await items.getItems(arguments?["route"] ?? "default", 
+      order: ToStr.order(settings!.order),
+      orderBy: ToStr.sortBy(settings!.orderBy),
+      updateOnLoad: true,
           onLoad: () {
         loadItems();
         setState(() {});
