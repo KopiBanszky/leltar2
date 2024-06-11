@@ -186,7 +186,9 @@ class _StDInnerState extends State<StDInner> {
                     ),
                     Button(
                       icon: Icons.close,
+                      fontSize: 10,
                       // size: Size(10, 10),
+                      width: 40,
                       padding: EdgeInsets.zero,
                       backgroundGradient: const LinearGradient(
                         colors: [
@@ -680,7 +682,8 @@ class _StDInnerState extends State<StDInner> {
                             });
                           },
                           icon: Icons.save_rounded,
-                          fontSize: 30,
+                          fontSize: 10,
+                          width: 40,
                           padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                           backgroundGradient: const LinearGradient(
                             colors: [

@@ -46,8 +46,8 @@ class LargeItem extends StatelessWidget {
                 color: Color.fromARGB(120, 0, 0, 0),
                 gradient: LinearGradient(
                   colors: [
-                    Color.fromARGB(113, 41, 140, 245),
-                    Color.fromARGB(125, 143, 102, 224),
+                        Color.fromARGB(255, 41, 139, 245),
+                        Color.fromARGB(160, 143, 102, 224),
                   ],
                   stops: [0, 1],
                   begin: Alignment.bottomLeft,
@@ -55,27 +55,6 @@ class LargeItem extends StatelessWidget {
                 )),
             child: Stack(
               children: [
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: image == null
-                        ? Icon(
-                            icon,
-                            color: const Color(0xff95A1AC),
-                            size: 140,
-                          )
-                        : Container(
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            // height: 140,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: image!.image,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
@@ -127,6 +106,27 @@ class LargeItem extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
+                ),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: image == null
+                        ? Icon(
+                            icon,
+                            color: const Color(0xff95A1AC),
+                            size: 140,
+                          )
+                        : Container(
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            // height: 140,
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: image!.image,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
               ],
