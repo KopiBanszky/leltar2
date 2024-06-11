@@ -7,15 +7,40 @@ class BasicDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: ListView(
-        children: const [
-          ListTile(
-            title: Text("Item 1"),
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: Text(
+              'Drawer Header',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+              ),
+            ),
           ),
           ListTile(
-            title: Text("Item 2"),
+            leading: Icon(Icons.home),
+            title: Text('Home'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, "/");
+            },
           ),
           ListTile(
-            title: Text("Item 3"),
+            leading: Icon(Icons.settings),
+            title: Text('Settings'),
+            onTap: () {
+              // Handle drawer item tap
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.money), 
+            title: Text("Számla"), 
+            onTap: () {
+              Navigator.pushReplacementNamed(context, "/billingPage");
+            },
           ),
         ],
       ),
