@@ -1,21 +1,27 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 
 class ListItem extends StatelessWidget {
-  const ListItem(
-      {super.key,
-      required this.name,
-      required this.description,
-      required this.onPressed,
-      this.onHold,
-      this.image,
-      this.icon = Icons.open_in_new_outlined});
+  const ListItem({
+    super.key,
+    required this.name,
+    required this.description,
+    required this.onPressed,
+    required this.isCategory,
+    this.onHold,
+    this.image,
+    this.icon = Icons.open_in_new_outlined,
+    this.problem = false,
+  });
 
   final String name;
   final String description;
+  final bool isCategory;
   final Image? image;
   final IconData? icon;
   final Function() onPressed;
   final Function()? onHold;
+  final bool problem;
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +32,11 @@ class ListItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
           ),
         ),
-        maximumSize: MaterialStateProperty.all<Size>(
-            Size(MediaQuery.sizeOf(context).width * .9, 200)),
+        maximumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.sizeOf(context).width * .9, 200)),
         backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
         shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
         elevation: MaterialStateProperty.all<double>(0),
-        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-            const EdgeInsets.all(0)),
+        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.all(0)),
       ),
       onPressed: onPressed,
       onLongPress: onHold,
@@ -60,19 +64,37 @@ class ListItem extends StatelessWidget {
               width: MediaQuery.sizeOf(context).width * .135,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(5.0, 5, 5, 5),
-                child: image == null
-                    ? Icon(icon, color: Colors.orange, size: 30)
-                    : Container(
-                        width: MediaQuery.of(context).size.width * 0.125,
-                        // height: 60,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: image!.image,
-                            fit: BoxFit.cover,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    image == null
+                        ? Icon(icon, color: (isCategory ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 143, 102, 224)), size: 30)
+                        : Container(
+                            width: MediaQuery.of(context).size.width * 0.125,
+                            // height: 60,
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: image!.image,
+                                fit: BoxFit.cover,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(10),
+                    if (problem)
+                      const Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Padding(
+                          padding: EdgeInsets.all(2.0),
+                          child: Icon(
+                            Icons.error,
+                            color: Colors.red,
+                            size: 15,
+                          ),
                         ),
                       ),
+                  ],
+                ),
               ),
             ),
             const Padding(

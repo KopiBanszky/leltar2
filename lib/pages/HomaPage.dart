@@ -11,6 +11,7 @@ import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/items.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
+import 'package:leltar_2/pages/OldSchoolExtension.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -54,7 +55,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
       if (categories.items.isEmpty) pageIndex = 1;
       _height = INITIALHEIGHT;
-      setState(() {});
+      if (mounted) setState(() {});
     }
   }
 
@@ -70,7 +71,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         settings: settings,
       );
       _height = INITIALHEIGHT;
-      setState(() {});
+      if (mounted) setState(() {});
     }
   }
 
@@ -79,15 +80,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.didChangeDependencies();
     arguments = ModalRoute.of(context)!.settings.arguments;
 
-    settings ??= arguments?["settings"] ??
-        SettingsDialog(
-          itemType: ItemType.LARGE,
-          categoryType: ItemType.LARGE,
-          order: Order.ASC,
-          orderBy: SortBy.ID,
-          columns: 1,
-          oldSchool: false,
-        );
+    settings ??= arguments?["settings"];
+    if (settings == null) {
+      settings = SettingsDialog(
+        saveImages: true,
+        itemType: ItemType.LARGE,
+        order: Order.ASC,
+        orderBy: SortBy.ID,
+        categoryType: ItemType.LARGE,
+        oldSchool: false,
+        indexImages: true,
+        columns: 1,
+      );
+      settings!.load().then((value) => setState(() {
+            settings = value;
+          }));
+    }
 
     appBar = ResponsiveAppBar(
       child: Searchbar(
@@ -103,7 +111,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           SortBy currentOrderBy = settings!.orderBy;
           settings!.display(context).then((value) {
             if (value) {
-              if(currentOrderBy != settings!.getOrderBy() || currentOrder != settings!.getOrder()){
+              if (currentOrderBy != settings!.getOrderBy() || currentOrder != settings!.getOrder()) {
                 items.sortItemsBy(settings!.getOrderBy(), settings!.getOrder());
                 categories.sortItemsBy(settings!.getOrderBy(), settings!.getOrder());
               }
@@ -124,14 +132,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     loadCategories();
 
     if (items.items.isEmpty) {
-      await items.getItems(arguments?["route"] ?? "default", 
-      order: ToStr.order(settings!.order),
-      orderBy: ToStr.sortBy(settings!.orderBy),
-      updateOnLoad: true,
-          onLoad: () {
+      await items.getItems(arguments?["route"] ?? "default",
+          order: ToStr.order(settings!.order), img: settings!.indexImages, orderBy: ToStr.sortBy(settings!.orderBy), updateOnLoad: true, onLoad: () {
         loadItems();
-        setState(() {});
+        if (mounted) setState(() {});
       });
+      for (Item item in items.items) {
+        await item.getProblems();
+      }
     }
     loadItems();
   }
@@ -161,6 +169,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         height: MediaQuery.of(context).size.height * .87,
         child: NotificationListener<ScrollNotification>(
           onNotification: (scrollNotification) {
+            if (settings!.oldSchool) return true;
             if (scrollNotification is ScrollUpdateNotification) {
               if (appBar.setScrollStatus(scrollNotification.metrics.pixels)) {
                 setState(() {});
@@ -182,7 +191,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 }
               } else if (_height == INITIALHEIGHT) {
                 setState(() {
-                  print("bruh?");
                   _height = 0.0;
                 });
               } else if (_height == 250.0) {
@@ -196,7 +204,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: SingleChildScrollView(
             // physics: const BouncingScrollPhysics(),
             controller: _scrollController,
-            child: displayWidget,
+            child: settings!.oldSchool
+                ? OldSchoolExtension(
+                    itemsWidget: itemWidgets,
+                    categoriesWidget: categoryWidgets,
+                    itemsLength: items.items.length,
+                    categoriesLength: categories.items.length,
+                  )
+                : displayWidget,
           ),
         ),
       ),
@@ -254,66 +269,64 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 15.0, vertical: 8),
-                    child: GNav(
-                      // rippleColor: Colors.grey[300]!,
-                      // hoverColor: Colors.grey[100]!,
-                      backgroundColor: Colors.black,
-                      gap: 8,
-                      activeColor: Colors.white,
-                      iconSize: 24,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                      duration: const Duration(milliseconds: 500),
-                      tabBackgroundColor: const Color.fromARGB(255, 58, 58, 58),
-                      color: Colors.white,
-                      tabBackgroundGradient: const LinearGradient(
-                        colors: [
-                          Color.fromARGB(73, 41, 140, 245),
-                          Color.fromARGB(73, 143, 102, 224),
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                      tabs: const [
-                        GButton(
-                          icon: Icons.folder_copy_outlined,
-                          text: 'Kategóriák',
-                          borderRadius: BorderRadius.all(Radius.circular(5)),
-                          iconActiveColor: Color.fromARGB(255, 41, 140, 245),
-                          textColor: Color.fromARGB(255, 41, 140, 245),
-                          backgroundColor: Color.fromARGB(73, 41, 140, 245),
+                  settings!.oldSchool
+                      ? const SizedBox()
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+                          child: GNav(
+                            // rippleColor: Colors.grey[300]!,
+                            // hoverColor: Colors.grey[100]!,
+                            backgroundColor: Colors.black,
+                            gap: 8,
+                            activeColor: Colors.white,
+                            iconSize: 24,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            duration: const Duration(milliseconds: 500),
+                            tabBackgroundColor: const Color.fromARGB(255, 58, 58, 58),
+                            color: Colors.white,
+                            tabBackgroundGradient: const LinearGradient(
+                              colors: [
+                                Color.fromARGB(73, 41, 140, 245),
+                                Color.fromARGB(73, 143, 102, 224),
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            tabs: const [
+                              GButton(
+                                icon: Icons.folder_copy_outlined,
+                                text: 'Kategóriák',
+                                borderRadius: BorderRadius.all(Radius.circular(5)),
+                                iconActiveColor: Color.fromARGB(255, 41, 140, 245),
+                                textColor: Color.fromARGB(255, 41, 140, 245),
+                                backgroundColor: Color.fromARGB(73, 41, 140, 245),
+                              ),
+                              GButton(
+                                icon: Icons.inventory_2_outlined,
+                                text: 'Tárgyak',
+                                borderRadius: BorderRadius.all(Radius.circular(5)),
+                                iconActiveColor: Color.fromARGB(255, 143, 102, 224),
+                                textColor: Color.fromARGB(255, 143, 102, 224),
+                                backgroundColor: Color.fromARGB(73, 143, 102, 224),
+                              ),
+                            ],
+                            selectedIndex: pageIndex,
+                            onTabChange: (index) {
+                              setState(() {
+                                pageIndex = index;
+                              });
+                            },
+                          ),
                         ),
-                        GButton(
-                          icon: Icons.inventory_2_outlined,
-                          text: 'Tárgyak',
-                          borderRadius: BorderRadius.all(Radius.circular(5)),
-                          iconActiveColor: Color.fromARGB(255, 143, 102, 224),
-                          textColor: Color.fromARGB(255, 143, 102, 224),
-                          backgroundColor: Color.fromARGB(73, 143, 102, 224),
-                        ),
-                      ],
-                      selectedIndex: pageIndex,
-                      onTabChange: (index) {
-                        setState(() {
-                          pageIndex = index;
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Button(
                         onPressed: () {}, //TODO: page index
                         text: "Új",
-                        icon: pageIndex == 0
-                            ? Icons.create_new_folder_outlined
-                            : Icons.add_circle_outline,
+                        icon: pageIndex == 0 ? Icons.create_new_folder_outlined : Icons.add_circle_outline,
                         fontSize: 16,
                         padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                         textColor: Colors.green,
@@ -324,13 +337,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       Button(
                         onPressed: () {},
                         text: "Szerkesztés",
-                        icon: Icons.edit_outlined,
+                        icon: (arguments?["route"] ?? "default") == "default" ? Icons.edit_off_outlined : Icons.edit_outlined,
                         fontSize: 16,
                         padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                         textColor: Colors.blue,
                         borderColor: Colors.blue,
                         spacing: MainAxisAlignment.spaceAround,
                         width: MediaQuery.of(context).size.width * 0.4,
+                        disabled: (arguments?["route"] ?? "default") == "default",
+                        disabledBorderColor: Colors.grey[700]!,
+                        disabledTextColor: Colors.grey[700]!,
                       ),
                     ],
                   ),
@@ -348,6 +364,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.red,
                         spacing: MainAxisAlignment.spaceEvenly,
                         width: MediaQuery.of(context).size.width * 0.25,
+                        disabled: (arguments?["route"] ?? "default") == "default",
+                        disabledBorderColor: Colors.grey[700]!,
+                        disabledTextColor: Colors.grey[700]!,
                       ),
                       Button(
                         onPressed: () {},
@@ -359,6 +378,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.orange,
                         spacing: MainAxisAlignment.spaceAround,
                         width: MediaQuery.of(context).size.width * 0.35,
+                        disabled: (arguments?["route"] ?? "default") == "default",
+                        disabledBorderColor: Colors.grey[700]!,
+                        disabledTextColor: Colors.grey[700]!,
                       ),
                     ],
                   ),

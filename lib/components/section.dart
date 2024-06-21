@@ -2,20 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class Section extends StatefulWidget {
-  const Section({super.key, required this.child, this.topLeft = true, this.topRight = true, this.bottomLeft = true, this.bottomRight= true});
+  const Section({
+    super.key,
+    required this.child,
+    this.topLeft = true,
+    this.topRight = true,
+    this.bottomLeft = true,
+    this.bottomRight = true,
+    this.padding = const EdgeInsets.all(20),
+  });
 
   final Widget child;
   final bool? topLeft;
   final bool? topRight;
   final bool? bottomLeft;
   final bool? bottomRight;
+  final EdgeInsets padding;
 
   @override
   State<Section> createState() => _SectionState();
 }
 
 class _SectionState extends State<Section> {
-
   Widget get child => widget.child;
   bool get topLeft => widget.topLeft ?? true;
   bool get topRight => widget.topRight ?? true;
@@ -24,10 +32,9 @@ class _SectionState extends State<Section> {
 
   Duration duration = Duration(seconds: 50);
 
-
   List<Color> colors = [
-    const Color.fromARGB(50, 41, 139, 245),
-    const Color.fromARGB(50, 155, 39, 176),
+    const Color.fromARGB(100, 41, 139, 245),
+    const Color.fromARGB(100, 155, 39, 176),
     // Colors.blue,
     // Colors.purple
   ];
@@ -45,7 +52,7 @@ class _SectionState extends State<Section> {
   int alignmentIndexEnd = 4;
 
   Future<void> changeGradient() async {
-    if(mounted) {
+    if (mounted) {
       setState(() {
         alignmentIndexStart++;
         alignmentIndexEnd++;
@@ -72,30 +79,28 @@ class _SectionState extends State<Section> {
   @override
   Widget build(BuildContext context) {
     // changeGradient();
-    return AnimatedContainer( 
-      duration: duration,
-      padding: const EdgeInsets.all(20),
-  
-      decoration: BoxDecoration(
-        border: Border.all(
+    return AnimatedContainer(
+        duration: duration,
+        padding: widget.padding,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: const Color.fromARGB(100, 71, 72, 72),
+            width: 1,
+          ),
           color: const Color.fromARGB(52, 71, 72, 72),
-          width: 1,
+          gradient: LinearGradient(
+            colors: colors,
+            stops: const [0, 1],
+            begin: alignments[alignmentIndexStart],
+            end: alignments[alignmentIndexEnd],
+          ),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(topLeft == true ? 15 : 5),
+            topRight: Radius.circular(topRight == true ? 15 : 5),
+            bottomLeft: Radius.circular(bottomLeft == true ? 15 : 5),
+            bottomRight: Radius.circular(bottomRight == true ? 15 : 5),
+          ),
         ),
-        color: const Color.fromARGB(52, 71, 72, 72),
-        gradient: LinearGradient(
-          colors: colors,
-          stops: const [0, 1],
-          begin: alignments[alignmentIndexStart],
-          end: alignments[alignmentIndexEnd],
-        ),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(topLeft == true ? 15 : 5),
-          topRight: Radius.circular(topRight == true ? 15 : 5),
-          bottomLeft: Radius.circular(bottomLeft == true ? 15 : 5),
-          bottomRight: Radius.circular(bottomRight == true ? 15 : 5),
-        ),
-      ),
-      child: child
-    );
+        child: child);
   }
 }

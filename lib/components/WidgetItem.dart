@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
 class WidgetItem extends StatelessWidget {
-  const WidgetItem(
-      {super.key,
-      required this.name,
-      required this.description,
-      required this.onPressed,
-      this.onHold,
-      this.image,
-      this.icon = Icons.open_in_new_outlined});
+  const WidgetItem({
+    super.key,
+    required this.name,
+    required this.description,
+    required this.onPressed,
+    this.onHold,
+    this.image,
+    this.icon = Icons.open_in_new_outlined,
+    this.problem = false,
+  });
 
   final String name;
   final String description;
@@ -16,6 +18,7 @@ class WidgetItem extends StatelessWidget {
   final IconData? icon;
   final Function() onPressed;
   final Function()? onHold;
+  final bool problem;
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +29,11 @@ class WidgetItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(5),
           ),
         ),
-        maximumSize: MaterialStateProperty.all<Size>(
-            Size(MediaQuery.sizeOf(context).width * .4, 187)),
+        maximumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.sizeOf(context).width * .4, 187)),
         backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
         // shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
         // elevation: MaterialStateProperty.all<double>(0),
-        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-            const EdgeInsets.all(0)),
+        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.all(0)),
       ),
       onPressed: onPressed,
       onLongPress: onHold,
@@ -54,14 +55,7 @@ class WidgetItem extends StatelessWidget {
                   width: MediaQuery.sizeOf(context).width,
                   height: MediaQuery.sizeOf(context).height * 1,
                   decoration: BoxDecoration(
-                    boxShadow: const [
-                      BoxShadow(
-                          blurRadius: 1,
-                          color: Color(0x4C7B4BD9),
-                          offset: Offset(0, 2),
-                          spreadRadius: 4,
-                          blurStyle: BlurStyle.outer)
-                    ],
+                    boxShadow: const [BoxShadow(blurRadius: 1, color: Color(0x4C7B4BD9), offset: Offset(0, 2), spreadRadius: 4, blurStyle: BlurStyle.outer)],
                     gradient: const LinearGradient(
                       colors: [
                         Color.fromARGB(255, 41, 139, 245),
@@ -97,8 +91,7 @@ class WidgetItem extends StatelessWidget {
                           Align(
                             alignment: const AlignmentDirectional(0, 0),
                             child: Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  0, 0, 0, 0),
+                              padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                               child: Padding(
                                 padding: const EdgeInsets.all(0.0),
                                 child: image == null
@@ -157,8 +150,7 @@ class WidgetItem extends StatelessWidget {
                       Align(
                         alignment: const AlignmentDirectional(0, 0),
                         child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(6, 0, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(6, 0, 0, 0),
                           child: Container(
                             width: MediaQuery.sizeOf(context).width,
                             decoration: const BoxDecoration(
@@ -173,8 +165,7 @@ class WidgetItem extends StatelessWidget {
                             child: Align(
                               alignment: const AlignmentDirectional(-1, 0),
                               child: Padding(
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    4, 5, 0, 0),
+                                padding: const EdgeInsetsDirectional.fromSTEB(4, 5, 0, 0),
                                 child: Text(
                                   name,
                                   textAlign: TextAlign.start,
@@ -207,8 +198,7 @@ class WidgetItem extends StatelessWidget {
                         child: Align(
                           alignment: const AlignmentDirectional(-1, 0),
                           child: Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                13, 0, 2, 0),
+                            padding: const EdgeInsetsDirectional.fromSTEB(13, 0, 2, 0),
                             child: Text(
                               description,
                               textAlign: TextAlign.start,
@@ -231,6 +221,19 @@ class WidgetItem extends StatelessWidget {
                   ),
                 ),
               ),
+              if (problem)
+                const Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(
+                      Icons.error,
+                      color: Colors.red,
+                      size: 25,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

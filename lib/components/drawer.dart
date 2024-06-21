@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:leltar_2/components/section.dart';
 
 class BasicDrawer extends StatelessWidget {
   const BasicDrawer({super.key});
@@ -6,38 +7,95 @@ class BasicDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: Colors.grey[900],
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: Colors.black,
             ),
-            child: Text(
-              'Drawer Header',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Image(
+                    height: MediaQuery.of(context).size.height * 0.08,
+                    image: const AssetImage('assets/439logo_nobg.png'),
+                  ),
+                  const Text(
+                    '439. Leltár',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
           ListTile(
-            leading: Icon(Icons.home),
-            title: Text('Home'),
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            selectedColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            selectedTileColor: Colors.transparent,
+            leading: const Icon(
+              Icons.home,
+              color: Colors.white,
+            ),
+            title: const Section(
+              topLeft: false,
+              bottomLeft: false,
+              bottomRight: false,
+              child: Text(
+                'Leltár',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
             onTap: () {
               Navigator.pushReplacementNamed(context, "/");
             },
           ),
           ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
+            leading: const Icon(
+              Icons.settings,
+              color: Colors.white,
+            ),
+            title: const Section(
+              topLeft: false,
+              bottomLeft: false,
+              bottomRight: false,
+              topRight: false,
+              child: Text(
+                'Beállítások',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
             onTap: () {
-              // Handle drawer item tap
+              Navigator.pushReplacementNamed(context, "/settings");
             },
           ),
           ListTile(
-            leading: Icon(Icons.money), 
-            title: Text("Számla"), 
+            leading: const Icon(
+              Icons.money,
+              color: Colors.white,
+            ),
+            title: const Section(
+              topLeft: false,
+              bottomLeft: false,
+              topRight: false,
+              child: Text(
+                "Számla",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
             onTap: () {
               Navigator.pushReplacementNamed(context, "/billingPage");
             },

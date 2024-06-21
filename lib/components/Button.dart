@@ -19,6 +19,7 @@ class Button extends StatelessWidget {
     this.disabledBackgroundGradient,
     this.width,
     this.spacing,
+    this.maxWidth,
   });
 
   final Function() onPressed;
@@ -36,6 +37,7 @@ class Button extends StatelessWidget {
   final Color? disabledTextColor;
   final Gradient? disabledBackgroundGradient;
   final double? width;
+  final double? maxWidth;
   final MainAxisAlignment? spacing;
 
   @override
@@ -43,6 +45,9 @@ class Button extends StatelessWidget {
     return AnimatedContainer(
       duration: Duration(milliseconds: duration ?? 200),
       width: width,
+      constraints: BoxConstraints(
+        maxWidth: maxWidth ?? double.infinity,
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
         border: Border.all(

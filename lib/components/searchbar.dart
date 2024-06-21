@@ -9,6 +9,8 @@ class Searchbar extends StatefulWidget {
     this.moreIcon,
     this.moreFunction,
     required this.title,
+    this.hint = "keresés",
+    this.onPressed,
   });
 
   final IconData? drawerIcon;
@@ -16,6 +18,8 @@ class Searchbar extends StatefulWidget {
   final IconData? moreIcon;
   final Function()? moreFunction;
   final String title;
+  final String hint;
+  final Function()? onPressed;
 
   @override
   State<Searchbar> createState() => _SearchbarState();
@@ -32,8 +36,7 @@ class _SearchbarState extends State<Searchbar> {
   @override
   void initState() {
     super.initState();
-    drawerFunction =
-        widget.drawerFunction ?? () => Scaffold.of(context).openDrawer();
+    drawerFunction = widget.drawerFunction ?? () => Scaffold.of(context).openDrawer();
     moreFunction = widget.moreFunction ?? () {};
     drawerIcon = widget.drawerIcon ?? Icons.sort_outlined;
     moreIcon = widget.moreIcon;
@@ -75,9 +78,10 @@ class _SearchbarState extends State<Searchbar> {
                     style: const ButtonStyle(
                       alignment: AlignmentDirectional.centerStart,
                     ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/searchHelper");
-                    },
+                    onPressed: widget.onPressed ??
+                        () {
+                          Navigator.pushNamed(context, "/searchHelper");
+                        },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -96,12 +100,12 @@ class _SearchbarState extends State<Searchbar> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            "keresés",
+                            widget.hint,
                             maxLines: 1,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.grey,
                               // fontSize: 20,
                             ),

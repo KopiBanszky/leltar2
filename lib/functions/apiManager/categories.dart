@@ -53,12 +53,7 @@ class Category {
     SettingsDialog? settings,
   }) {
     onPressed ??= () {
-      Navigator.pushNamed(context, "/", arguments: {
-        "route": "${path == "default" ? "" : path}${id}_",
-        "settings": settings,
-        "name": name,
-        "id": id
-      });
+      Navigator.pushNamed(context, "/", arguments: {"route": "${path == "default" ? "" : path}${id}_", "settings": settings, "name": name, "id": id});
     };
     if (type == ItemType.LARGE) {
       return LargeItem(
@@ -73,6 +68,7 @@ class Category {
         description: description,
         onPressed: onPressed as dynamic Function(),
         icon: icon,
+        isCategory: true,
       );
     } else if (type == ItemType.WIDGET) {
       return WidgetItem(
@@ -89,31 +85,54 @@ class Category {
 
 enum SortBy { NAME, EDITED, ID }
 
+SortBy convertToSortBy(String sortBy) {
+  switch (sortBy.toLowerCase()) {
+    case "name":
+      return SortBy.NAME;
+    case "timestamp":
+      return SortBy.EDITED;
+    case "finalID":
+      return SortBy.ID;
+    default:
+      return SortBy.NAME;
+  }
+}
+
 enum Order { ASC, DESC }
 
-class ToStr{
-  static String sortBy(SortBy sortBy){
-    if(sortBy == SortBy.NAME){
+Order convertToOrder(String order) {
+  switch (order.toLowerCase()) {
+    case "ASC":
+      return Order.ASC;
+    case "DESC":
+      return Order.DESC;
+    default:
+      return Order.ASC;
+  }
+}
+
+class ToStr {
+  static String sortBy(SortBy sortBy) {
+    if (sortBy == SortBy.NAME) {
       return "name";
-    }else if(sortBy == SortBy.EDITED){
+    } else if (sortBy == SortBy.EDITED) {
       return "timestamp";
-    }else if(sortBy == SortBy.ID){
+    } else if (sortBy == SortBy.ID) {
       return "finalID";
-    }else{
+    } else {
       return "name";
     }
   }
 
-  static String order(Order order){
-    if(order == Order.ASC){
+  static String order(Order order) {
+    if (order == Order.ASC) {
       return "ASC";
-    }else if(order == Order.DESC){
+    } else if (order == Order.DESC) {
       return "DESC";
-    }else{
+    } else {
       return "ASC";
     }
   }
-
 }
 
 class Categories {
@@ -157,12 +176,16 @@ class Categories {
     });
     if (res.ok) {
       List<Category> categories = [];
+      List<int> ids = [];
       dynamic data = jsonDecode(jsonDecode(res.data));
       if (data == false) return [];
       for (var item in data) {
         if (item["type"] == "category") {
           // print(item["name"]);
-          categories.add(Category.fromJson(item));
+          Category _category = Category.fromJson(item);
+          if (ids.contains(_category.id)) continue;
+          ids.add(_category.id);
+          categories.add(_category);
         }
       }
       return categories;
@@ -219,10 +242,7 @@ class Categories {
     String orderBy = "timestamp",
     String order = "ASC",
   }) async {
-    RquestResult res = await Request.get("getDataByQuery", {
-      "q":
-          "$query ORDER BY $orderBy $order ${limit == -1 ? "" : " LIMIT $offset, $limit"}"
-    });
+    RquestResult res = await Request.get("getDataByQuery", {"q": "$query ORDER BY $orderBy $order ${limit == -1 ? "" : " LIMIT $offset, $limit"}"});
     if (res.ok) {
       List<Category> categories = [];
       for (var item in jsonDecode(jsonDecode(res.data))) {
@@ -240,8 +260,7 @@ class Categories {
     int offset = 0,
     int limit = -1,
   }) async {
-    return await Categories.requestCategoriesByQuery(query,
-        offset: offset, limit: limit);
+    return await Categories.requestCategoriesByQuery(query, offset: offset, limit: limit);
   }
 
   //sorts the items by the given order

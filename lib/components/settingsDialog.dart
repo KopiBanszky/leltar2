@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -5,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
-import 'package:leltar_2/pages/HomaPage.dart';
+import 'package:localstore/localstore.dart';
 
 class SettingsDialog {
   late ItemType itemType;
@@ -14,6 +16,8 @@ class SettingsDialog {
   late SortBy orderBy;
   late int columns;
   late bool oldSchool;
+  late bool indexImages;
+  late bool saveImages;
 
   SettingsDialog({
     required this.itemType,
@@ -22,7 +26,46 @@ class SettingsDialog {
     required this.orderBy,
     required this.columns,
     required this.oldSchool,
+    required this.indexImages,
+    required this.saveImages,
   });
+
+  factory SettingsDialog.fromJson(Map<String, dynamic> json) {
+    return SettingsDialog(
+      itemType: convertToItemType(json['itemType'] ?? "LARGE"),
+      categoryType: convertToItemType(json['categoryType'] ?? "LARGE"),
+      order: convertToOrder(json['order'] ?? "ASC"),
+      orderBy: convertToSortBy(json['orderBy'] ?? "ID"),
+      columns: json['columns'] ?? 1,
+      oldSchool: json['oldSchool'] ?? false,
+      indexImages: json['indexImages'] ?? true,
+      saveImages: json['saveImages'] ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'itemType': itemType.name,
+      'categoryType': categoryType.name,
+      'order': order.name,
+      'orderBy': orderBy.name,
+      'columns': columns,
+      'oldSchool': oldSchool,
+      'indexImages': indexImages,
+      'saveImages': saveImages,
+    };
+  }
+
+  Future save() async {
+    final Localstore localstore = Localstore.instance;
+    await localstore.collection("userData").doc("settings").set(toJson());
+  }
+
+  Future<SettingsDialog> load() async {
+    final Localstore localstore = Localstore.instance;
+    final Map<String, dynamic>? data = await localstore.collection("userData").doc("settings").get();
+    return SettingsDialog.fromJson(data!);
+  }
 
   late ItemType newItemType = itemType;
   late ItemType newCategoryType = categoryType;
@@ -159,13 +202,13 @@ class _StDInnerState extends State<StDInner> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(56.0, 70, 60, 50),
+      padding: const EdgeInsets.fromLTRB(40.0, 70, 40, 60),
       child: Container(
         decoration: BoxDecoration(
-          color: Color.fromARGB(255, 24, 24, 24),
+          color: const Color.fromARGB(255, 24, 24, 24),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: Color.fromARGB(150, 143, 102, 224),
+            color: const Color.fromARGB(150, 143, 102, 224),
             width: 1,
           ),
         ),
@@ -238,19 +281,15 @@ class _StDInnerState extends State<StDInner> {
                                 value: settingsDialog.newOldSchool,
                                 onChanged: (value) {
                                   setState(() {
-                                    settingsDialog
-                                        .setCategoryType(ItemType.LIST);
+                                    settingsDialog.setCategoryType(ItemType.LIST);
                                     settingsDialog.setItemType(ItemType.LIST);
                                     settingsDialog.setOldSchool(value);
                                   });
                                 },
                                 activeColor: Colors.orange,
-                                activeTrackColor:
-                                    const Color.fromARGB(151, 228, 144, 19),
-                                inactiveThumbColor:
-                                    const Color.fromARGB(130, 41, 140, 245),
-                                inactiveTrackColor:
-                                    const Color.fromARGB(150, 143, 102, 224),
+                                activeTrackColor: const Color.fromARGB(151, 228, 144, 19),
+                                inactiveThumbColor: const Color.fromARGB(130, 41, 140, 245),
+                                inactiveTrackColor: const Color.fromARGB(150, 143, 102, 224),
                               ),
                             ),
                           ),
@@ -295,16 +334,9 @@ class _StDInnerState extends State<StDInner> {
                     icon: Icons.list,
                     fontSize: 30,
                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                    backgroundGradient:
-                        settingsDialog.newCategoryType == ItemType.LIST
-                            ? focused
-                            : unFocused,
-                    borderColor: settingsDialog.newCategoryType != ItemType.LIST
-                        ? Colors.white
-                        : const Color.fromARGB(130, 41, 140, 245),
-                    textColor: settingsDialog.newCategoryType != ItemType.LIST
-                        ? Colors.white
-                        : const Color.fromARGB(255, 41, 140, 245),
+                    backgroundGradient: settingsDialog.newCategoryType == ItemType.LIST ? focused : unFocused,
+                    borderColor: settingsDialog.newCategoryType != ItemType.LIST ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
+                    textColor: settingsDialog.newCategoryType != ItemType.LIST ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
                     duration: 200,
                   ),
                   Button(
@@ -317,21 +349,12 @@ class _StDInnerState extends State<StDInner> {
                     icon: Icons.view_comfy_outlined,
                     fontSize: 30,
                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                    backgroundGradient:
-                        settingsDialog.newCategoryType == ItemType.WIDGET
-                            ? focused
-                            : unFocused,
-                    borderColor:
-                        settingsDialog.newCategoryType != ItemType.WIDGET
-                            ? Colors.white
-                            : const Color.fromARGB(130, 41, 140, 245),
-                    textColor: settingsDialog.newCategoryType != ItemType.WIDGET
-                        ? Colors.white
-                        : const Color.fromARGB(255, 41, 140, 245),
+                    backgroundGradient: settingsDialog.newCategoryType == ItemType.WIDGET ? focused : unFocused,
+                    borderColor: settingsDialog.newCategoryType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
+                    textColor: settingsDialog.newCategoryType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
                     duration: 200,
                     disabled: settingsDialog.newOldSchool,
-                    disabledBorderColor:
-                        const Color.fromARGB(255, 107, 107, 107),
+                    disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                     disabledTextColor: Colors.grey,
                   ),
                   Button(
@@ -344,21 +367,12 @@ class _StDInnerState extends State<StDInner> {
                     icon: Icons.view_day_outlined,
                     fontSize: 30,
                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                    backgroundGradient:
-                        settingsDialog.newCategoryType == ItemType.LARGE
-                            ? focused
-                            : unFocused,
-                    borderColor:
-                        settingsDialog.newCategoryType != ItemType.LARGE
-                            ? Colors.white
-                            : const Color.fromARGB(130, 41, 140, 245),
-                    textColor: settingsDialog.newCategoryType != ItemType.LARGE
-                        ? Colors.white
-                        : const Color.fromARGB(255, 41, 140, 245),
+                    backgroundGradient: settingsDialog.newCategoryType == ItemType.LARGE ? focused : unFocused,
+                    borderColor: settingsDialog.newCategoryType != ItemType.LARGE ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
+                    textColor: settingsDialog.newCategoryType != ItemType.LARGE ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
                     duration: 200,
                     disabled: settingsDialog.newOldSchool,
-                    disabledBorderColor:
-                        const Color.fromARGB(255, 107, 107, 107),
+                    disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                     disabledTextColor: Colors.grey,
                   ),
                 ],
@@ -388,7 +402,6 @@ class _StDInnerState extends State<StDInner> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -402,16 +415,9 @@ class _StDInnerState extends State<StDInner> {
                     icon: Icons.list,
                     fontSize: 30,
                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                    backgroundGradient:
-                        settingsDialog.newItemType == ItemType.LIST
-                            ? focused
-                            : unFocused,
-                    borderColor: settingsDialog.newItemType != ItemType.LIST
-                        ? Colors.white
-                        : const Color.fromARGB(130, 143, 102, 224),
-                    textColor: settingsDialog.newItemType != ItemType.LIST
-                        ? Colors.white
-                        : const Color.fromARGB(255, 143, 102, 224),
+                    backgroundGradient: settingsDialog.newItemType == ItemType.LIST ? focused : unFocused,
+                    borderColor: settingsDialog.newItemType != ItemType.LIST ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
+                    textColor: settingsDialog.newItemType != ItemType.LIST ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
                     duration: 200,
                   ),
                   Button(
@@ -424,20 +430,12 @@ class _StDInnerState extends State<StDInner> {
                     icon: Icons.view_comfy_outlined,
                     fontSize: 30,
                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                    backgroundGradient:
-                        settingsDialog.newItemType == ItemType.WIDGET
-                            ? focused
-                            : unFocused,
-                    borderColor: settingsDialog.newItemType != ItemType.WIDGET
-                        ? Colors.white
-                        : const Color.fromARGB(130, 143, 102, 224),
-                    textColor: settingsDialog.newItemType != ItemType.WIDGET
-                        ? Colors.white
-                        : const Color.fromARGB(255, 143, 102, 224),
+                    backgroundGradient: settingsDialog.newItemType == ItemType.WIDGET ? focused : unFocused,
+                    borderColor: settingsDialog.newItemType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
+                    textColor: settingsDialog.newItemType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
                     duration: 200,
                     disabled: settingsDialog.newOldSchool,
-                    disabledBorderColor:
-                        const Color.fromARGB(255, 107, 107, 107),
+                    disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                     disabledTextColor: Colors.grey,
                   ),
                   Button(
@@ -450,20 +448,12 @@ class _StDInnerState extends State<StDInner> {
                     icon: Icons.view_day_outlined,
                     fontSize: 30,
                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                    backgroundGradient:
-                        settingsDialog.newItemType == ItemType.LARGE
-                            ? focused
-                            : unFocused,
-                    borderColor: settingsDialog.newItemType != ItemType.LARGE
-                        ? Colors.white
-                        : const Color.fromARGB(130, 143, 102, 224),
-                    textColor: settingsDialog.newItemType != ItemType.LARGE
-                        ? Colors.white
-                        : const Color.fromARGB(255, 143, 102, 224),
+                    backgroundGradient: settingsDialog.newItemType == ItemType.LARGE ? focused : unFocused,
+                    borderColor: settingsDialog.newItemType != ItemType.LARGE ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
+                    textColor: settingsDialog.newItemType != ItemType.LARGE ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
                     duration: 200,
                     disabled: settingsDialog.newOldSchool,
-                    disabledBorderColor:
-                        const Color.fromARGB(255, 107, 107, 107),
+                    disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                     disabledTextColor: Colors.grey,
                   ),
                 ],
@@ -471,7 +461,6 @@ class _StDInnerState extends State<StDInner> {
               const SizedBox(
                 height: 25,
               ),
-              
               const Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -495,7 +484,7 @@ class _StDInnerState extends State<StDInner> {
                 ],
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: (MediaQuery.of(context).size.width >= 625 ? MediaQuery.of(context).size.width * .074: 0)),
+                padding: EdgeInsets.symmetric(horizontal: (MediaQuery.of(context).size.width >= 625 ? MediaQuery.of(context).size.width * .074 : 0)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -503,7 +492,7 @@ class _StDInnerState extends State<StDInner> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Button(
-                          onPressed:  () {
+                          onPressed: () {
                             setState(() {
                               settingsDialog.setOrderBy(SortBy.NAME);
                             });
@@ -511,19 +500,11 @@ class _StDInnerState extends State<StDInner> {
                           icon: Icons.sort_by_alpha_rounded,
                           fontSize: 30,
                           padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                          backgroundGradient:
-                              settingsDialog.newOrderBy == SortBy.NAME
-                                  ? focused
-                                  : unFocused,
-                          borderColor: settingsDialog.newOrderBy != SortBy.NAME
-                              ? Colors.white
-                              : const Color.fromARGB(130,102, 224, 169),
-                          textColor: settingsDialog.newOrderBy != SortBy.NAME
-                              ? Colors.white
-                              : const Color.fromARGB(200,102, 224, 169),
+                          backgroundGradient: settingsDialog.newOrderBy == SortBy.NAME ? focused : unFocused,
+                          borderColor: settingsDialog.newOrderBy != SortBy.NAME ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
+                          textColor: settingsDialog.newOrderBy != SortBy.NAME ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
                           duration: 200,
-                          disabledBorderColor:
-                              const Color.fromARGB(255, 107, 107, 107),
+                          disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                           disabledTextColor: Colors.grey,
                         ),
                         Button(
@@ -535,19 +516,11 @@ class _StDInnerState extends State<StDInner> {
                           icon: Icons.update,
                           fontSize: 30,
                           padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                          backgroundGradient:
-                              settingsDialog.newOrderBy == SortBy.ID
-                                  ? focused
-                                  : unFocused,
-                          borderColor: settingsDialog.newOrderBy != SortBy.ID
-                              ? Colors.white
-                              : const Color.fromARGB(130, 102, 224, 169),
-                          textColor: settingsDialog.newOrderBy != SortBy.ID
-                              ? Colors.white
-                              : const Color.fromARGB(200, 102, 224, 169),
+                          backgroundGradient: settingsDialog.newOrderBy == SortBy.ID ? focused : unFocused,
+                          borderColor: settingsDialog.newOrderBy != SortBy.ID ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
+                          textColor: settingsDialog.newOrderBy != SortBy.ID ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
                           duration: 200,
-                          disabledBorderColor:
-                              const Color.fromARGB(255, 107, 107, 107),
+                          disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                           disabledTextColor: Colors.grey,
                         ),
                         Button(
@@ -559,42 +532,71 @@ class _StDInnerState extends State<StDInner> {
                           icon: Icons.edit_square,
                           fontSize: 30,
                           padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                          backgroundGradient:
-                              settingsDialog.newOrderBy == SortBy.EDITED
-                                  ? focused
-                                  : unFocused,
-                          borderColor: settingsDialog.newOrderBy != SortBy.EDITED
-                              ? Colors.white
-                              : const Color.fromARGB(130, 102, 224, 169),
-                          textColor: settingsDialog.newOrderBy != SortBy.EDITED
-                              ? Colors.white
-                              : const Color.fromARGB(200, 102, 224, 169),
+                          backgroundGradient: settingsDialog.newOrderBy == SortBy.EDITED ? focused : unFocused,
+                          borderColor: settingsDialog.newOrderBy != SortBy.EDITED ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
+                          textColor: settingsDialog.newOrderBy != SortBy.EDITED ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
                           duration: 200,
-                          disabledBorderColor:
-                              const Color.fromARGB(255, 107, 107, 107),
+                          disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                           disabledTextColor: Colors.grey,
                         ),
-                        if(MediaQuery.of(context).size.width >= 625) const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 30.0),
-                          child: SizedBox(
-                            width: 10,
+                        if (MediaQuery.of(context).size.width >= 625)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 30.0),
+                            child: SizedBox(
+                              width: 10,
+                            ),
                           ),
-                        ),
-                        if(MediaQuery.of(context).size.width >= 625) Button(
+                        if (MediaQuery.of(context).size.width >= 625)
+                          Button(
+                            onPressed: () {
+                              setState(() {
+                                settingsDialog.toggleOrder();
+                              });
+                            },
+                            width: 82.5,
+                            icon: settingsDialog.newOrder != Order.ASC ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                            fontSize: 30,
+                            padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                            backgroundGradient: settingsDialog.newOrder != Order.ASC
+                                ? const LinearGradient(
+                                    colors: [
+                                      Color.fromARGB(73, 102, 224, 169),
+                                      Color.fromARGB(73, 41, 140, 245),
+                                    ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                  )
+                                : const LinearGradient(
+                                    colors: [
+                                      Color.fromARGB(73, 102, 224, 169),
+                                      Color.fromARGB(73, 41, 140, 245),
+                                    ],
+                                    end: Alignment.topCenter,
+                                    begin: Alignment.bottomCenter,
+                                  ),
+                            borderColor:
+                                settingsDialog.newOrder == Order.ASC ? const Color.fromARGB(73, 41, 140, 245) : const Color.fromARGB(73, 102, 224, 169),
+                            textColor:
+                                settingsDialog.newOrder != Order.ASC ? const Color.fromARGB(200, 41, 140, 245) : const Color.fromARGB(200, 102, 224, 169),
+                            duration: 200,
+                          ),
+                      ],
+                    ),
+                    if (MediaQuery.of(context).size.width < 625)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+                        child: Button(
                           onPressed: () {
                             setState(() {
                               settingsDialog.toggleOrder();
                             });
                           },
                           width: 82.5,
-                          icon: settingsDialog.newOrder != Order.ASC ?
-                                Icons.arrow_upward_rounded : 
-                                Icons.arrow_downward_rounded,
+                          icon: settingsDialog.newOrder != Order.ASC ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                           fontSize: 30,
                           padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                          backgroundGradient:
-                              settingsDialog.newOrder != Order.ASC ?
-                                const LinearGradient(
+                          backgroundGradient: settingsDialog.newOrder != Order.ASC
+                              ? const LinearGradient(
                                   colors: [
                                     Color.fromARGB(73, 102, 224, 169),
                                     Color.fromARGB(73, 41, 140, 245),
@@ -602,8 +604,7 @@ class _StDInnerState extends State<StDInner> {
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 )
-                                : 
-                                const LinearGradient(
+                              : const LinearGradient(
                                   colors: [
                                     Color.fromARGB(73, 102, 224, 169),
                                     Color.fromARGB(73, 41, 140, 245),
@@ -611,58 +612,11 @@ class _StDInnerState extends State<StDInner> {
                                   end: Alignment.topCenter,
                                   begin: Alignment.bottomCenter,
                                 ),
-                          borderColor: settingsDialog.newOrder == Order.ASC
-                              ? const Color.fromARGB(73, 41, 140, 245)
-                              : const Color.fromARGB(73, 102, 224, 169),
-                          textColor: settingsDialog.newOrder != Order.ASC
-                              ? const Color.fromARGB(200, 41, 140, 245)
-                              : const Color.fromARGB(200, 102, 224, 169),
+                          borderColor: settingsDialog.newOrder == Order.ASC ? const Color.fromARGB(73, 41, 140, 245) : const Color.fromARGB(73, 102, 224, 169),
+                          textColor: settingsDialog.newOrder != Order.ASC ? const Color.fromARGB(200, 41, 140, 245) : const Color.fromARGB(200, 102, 224, 169),
                           duration: 200,
                         ),
-                      ],
-                    ),
-                    if(MediaQuery.of(context).size.width < 625) Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-                      child: Button(
-                        onPressed: () {
-                          setState(() {
-                            settingsDialog.toggleOrder();
-                          });
-                        },
-                        width: 82.5,
-                        icon: settingsDialog.newOrder != Order.ASC ?
-                              Icons.arrow_upward_rounded : 
-                              Icons.arrow_downward_rounded,
-                        fontSize: 30,
-                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                        backgroundGradient:
-                            settingsDialog.newOrder != Order.ASC ?
-                              const LinearGradient(
-                                colors: [
-                                  Color.fromARGB(73, 102, 224, 169),
-                                  Color.fromARGB(73, 41, 140, 245),
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              )
-                              : 
-                              const LinearGradient(
-                                colors: [
-                                  Color.fromARGB(73, 102, 224, 169),
-                                  Color.fromARGB(73, 41, 140, 245),
-                                ],
-                                end: Alignment.topCenter,
-                                begin: Alignment.bottomCenter,
-                              ),
-                        borderColor: settingsDialog.newOrder == Order.ASC
-                            ? const Color.fromARGB(73, 41, 140, 245)
-                            : const Color.fromARGB(73, 102, 224, 169),
-                        textColor: settingsDialog.newOrder != Order.ASC
-                            ? const Color.fromARGB(200, 41, 140, 245)
-                            : const Color.fromARGB(200, 102, 224, 169),
-                        duration: 200,
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -671,7 +625,7 @@ class _StDInnerState extends State<StDInner> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 10, 10),
+                    padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [

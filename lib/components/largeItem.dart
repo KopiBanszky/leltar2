@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
 class LargeItem extends StatelessWidget {
-  const LargeItem(
-      {super.key,
-      required this.name,
-      required this.description,
-      required this.onPressed,
-      this.onHold,
-      this.image,
-      this.icon = Icons.open_in_new_outlined});
+  const LargeItem({
+    super.key,
+    required this.name,
+    required this.description,
+    required this.onPressed,
+    this.onHold,
+    this.image,
+    this.icon = Icons.open_in_new_outlined,
+    this.problem = false,
+  });
 
   final String name;
   final String description;
@@ -16,6 +18,7 @@ class LargeItem extends StatelessWidget {
   final IconData? icon;
   final Function() onPressed;
   final Function()? onHold;
+  final bool problem;
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +31,11 @@ class LargeItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
               ),
             ),
-            maximumSize: MaterialStateProperty.all<Size>(
-                Size(MediaQuery.sizeOf(context).width * .9, 200)),
-            backgroundColor:
-                MaterialStateProperty.all<Color>(Colors.transparent),
+            maximumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.sizeOf(context).width * .9, 200)),
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
             shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
             elevation: MaterialStateProperty.all<double>(0),
-            padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                const EdgeInsets.all(0)),
+            padding: MaterialStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.all(0)),
           ),
           onPressed: onPressed,
           onLongPress: onHold,
@@ -46,8 +46,8 @@ class LargeItem extends StatelessWidget {
                 color: Color.fromARGB(120, 0, 0, 0),
                 gradient: LinearGradient(
                   colors: [
-                        Color.fromARGB(255, 41, 139, 245),
-                        Color.fromARGB(160, 143, 102, 224),
+                    Color.fromARGB(255, 41, 139, 245),
+                    Color.fromARGB(160, 143, 102, 224),
                   ],
                   stops: [0, 1],
                   begin: Alignment.bottomLeft,
@@ -55,6 +55,27 @@ class LargeItem extends StatelessWidget {
                 )),
             child: Stack(
               children: [
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: image == null
+                        ? Icon(
+                            icon,
+                            color: const Color.fromARGB(255, 199, 209, 218),
+                            size: 140,
+                          )
+                        : Container(
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            // height: 140,
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: image!.image,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
@@ -108,27 +129,19 @@ class LargeItem extends StatelessWidget {
                     ),
                   ),
                 ),
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: image == null
-                        ? Icon(
-                            icon,
-                            color: const Color(0xff95A1AC),
-                            size: 140,
-                          )
-                        : Container(
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            // height: 140,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: image!.image,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
+                if (problem)
+                  const Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.error,
+                        color: Colors.red,
+                        size: 25,
+                      ),
+                    ),
                   ),
-                ),
               ],
             ),
           ),

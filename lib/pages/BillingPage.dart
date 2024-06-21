@@ -1,14 +1,22 @@
-import 'package:flutter/cupertino.dart';
+// ignore_for_file: invalid_use_of_visible_for_testing_member, avoid_init_to_null, prefer_final_fields, non_constant_identifier_names
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/components/appBar.dart';
+import 'package:leltar_2/components/dateInput.dart';
 import 'package:leltar_2/components/drawer.dart';
 import 'package:leltar_2/components/searchbar.dart';
 import 'package:leltar_2/components/section.dart';
 import 'package:leltar_2/components/settingsDialog.dart';
+import 'package:leltar_2/components/snackBar.dart';
+import 'package:leltar_2/components/textInput.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
+import 'package:leltar_2/functions/http/http.dart';
+// ignore: depend_on_referenced_packages
+import 'package:image_picker/image_picker.dart';
 
 class BillingPage extends StatefulWidget {
   const BillingPage({super.key});
@@ -19,6 +27,8 @@ class BillingPage extends StatefulWidget {
 
 class _BillingPageState extends State<BillingPage> {
   dynamic arguments;
+  final GlobalKey sectionKey = GlobalKey();
+  double height = 0.0;
 
   late ResponsiveAppBar appBar;
 
@@ -28,6 +38,8 @@ class _BillingPageState extends State<BillingPage> {
 
   double INITIALHEIGHT = 80.0;
   double _height = 80.0;
+
+  bool income = false;
 
   bool whiteMoney = false;
   bool kp = true; // kp = készpénz -> true = készpénz, false = bankkártya
@@ -40,8 +52,94 @@ class _BillingPageState extends State<BillingPage> {
   String who = "";
   String comment = "";
 
+  File? image;
+  XFile? imageX;
 
-  @override
+  final _formKey = GlobalKey<FormState>();
+
+  TextEditingController projectNameController = TextEditingController();
+  TextEditingController subprojectNameController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
+  TextEditingController objectController = TextEditingController();
+  TextEditingController whoController = TextEditingController();
+  TextEditingController commentController = TextEditingController();
+  TextEditingController dateController = TextEditingController();
+
+  Future<void> uploadData() async {
+    CustomSnackbar.show(context, "Mentés...");
+    if (!_formKey.currentState!.validate()) {
+      CustomSnackbar.show(context, "Hibás adatok!");
+      return;
+    }
+    if (imageX != null) {
+      await post_image("uplioadBill", kIsWeb ? null : image, kIsWeb ? imageX : null, kIsWeb, {
+        "income": (income ? 1 : 0).toString(),
+        "white": (whiteMoney ? 1 : 0).toString(),
+        "cash": (kp ? 1 : 0).toString(),
+        "project": projectName,
+        "subproject": subprojectName,
+        "date": dateController.text,
+        "amount": amount.toString(),
+        "object": object,
+        "who": who,
+        "comment": comment,
+        "device": "mobile",
+      });
+    }
+    await http_post("uploadBill", {
+      "data": {
+        "income": income,
+        "white": whiteMoney,
+        "cash": kp,
+        "project": projectName,
+        "subproject": subprojectName,
+        "date": dateController.text,
+        "amount": amount,
+        "object": object,
+        "who": who,
+        "comment": comment,
+      },
+      "device": "unknown",
+    });
+    setState(() {
+      projectName = "Choice 1";
+      subprojectName = "";
+      amount = 0;
+      object = "";
+      who = "";
+      comment = "";
+      if (!kIsWeb) image!.delete();
+      image = null;
+      imageX = null;
+
+      projectNameController.clear();
+      subprojectNameController.clear();
+      dateController.clear();
+      amountController.clear();
+      objectController.clear();
+      whoController.clear();
+      commentController.clear();
+
+      projectNameController.text = "";
+      subprojectNameController.text = "";
+      dateController.text = "";
+      amountController.text = "";
+      objectController.text = "";
+      whoController.text = "";
+      commentController.text = "";
+      CustomSnackbar.show(context, "Sikeresen mentve!");
+    });
+  }
+
+  Future getImage({required bool binary}) async {
+    try {
+      imageX = await ImagePicker.platform.getImageFromSource(source: ImageSource.camera);
+    } catch (err) {
+      imageX = await ImagePicker.platform.getImageFromSource(source: ImageSource.gallery);
+    }
+    if (imageX == null) return;
+    image = File(imageX!.path);
+  }
 
   @override
   void didChangeDependencies() async {
@@ -50,13 +148,14 @@ class _BillingPageState extends State<BillingPage> {
 
     settings ??= arguments?["settings"] ??
         SettingsDialog(
-          itemType: ItemType.LARGE,
-          categoryType: ItemType.LARGE,
-          order: Order.ASC,
-          orderBy: SortBy.ID,
-          columns: 1,
-          oldSchool: false,
-        );
+            itemType: ItemType.LARGE,
+            categoryType: ItemType.LARGE,
+            order: Order.ASC,
+            orderBy: SortBy.ID,
+            columns: 1,
+            oldSchool: false,
+            indexImages: true,
+            saveImages: true);
 
     appBar = ResponsiveAppBar(
       child: Searchbar(
@@ -66,8 +165,9 @@ class _BillingPageState extends State<BillingPage> {
         moreFunction: () {},
       ),
     );
-    }
+  }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(
@@ -77,7 +177,7 @@ class _BillingPageState extends State<BillingPage> {
       appBar: appBar.widget(),
       body: Container(
         color: Colors.transparent,
-        height: MediaQuery.of(context).size.height * .87,
+        height: MediaQuery.of(context).size.height * .9,
         child: NotificationListener<ScrollNotification>(
           onNotification: (scrollNotification) {
             if (scrollNotification is ScrollUpdateNotification) {
@@ -101,7 +201,6 @@ class _BillingPageState extends State<BillingPage> {
                 }
               } else if (_height == INITIALHEIGHT) {
                 setState(() {
-                  print("bruh?");
                   _height = 0.0;
                 });
               } else if (_height == 250.0) {
@@ -117,239 +216,360 @@ class _BillingPageState extends State<BillingPage> {
             controller: _scrollController,
             child: Padding(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Section(
-                    bottomLeft: false,
-                    bottomRight: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * .8,
-                          height: 50,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextField(
-                              onChanged: (value) {
-                                subprojectName = value;
-                              },
-                              decoration: const InputDecoration(
-                                hintText: "Projekt neve",
-                                hintStyle: TextStyle(
-                                  color: Colors.white,
-                                ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Section(
+                      bottomLeft: false,
+                      bottomRight: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * .8,
+                            // height: 50,
+                            child: Padding(
+                                padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                                child: TextInput(
+                                  controller: projectNameController,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "Kötelező mező!";
+                                    }
+                                    return null;
+                                  },
+                                  onChanged: (value) {
+                                    projectName = value;
+                                  },
+                                  labelText: "Projekt neve",
+                                )),
+                          ),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * .75,
+                            // height: 50,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
+                              child: TextInput(
+                                controller: subprojectNameController,
+                                onChanged: (value) {
+                                  subprojectName = value;
+                                },
+                                labelText: "Alprojekt neve",
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w300,
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * .75,
-                          height: 50,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 4, 0, 8),
-                            child: TextField(
-                              onChanged: (value) {
-                                subprojectName = value;
-                              },
-                              decoration: const InputDecoration(
-                                hintText: "Alprojekt neve",
-                                hintStyle: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,//MediaQuery.of(context).size.width * .02,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width * .5) - 20 - 5,
-                        child: Section(
-                          topRight: false,
-                          topLeft: false,
-                          bottomRight: false,
-                          bottomLeft: false,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Button(
-                                // width: MediaQuery.of(context).size.width * .15,
-                                onPressed: () {
-                                  setState(() {
-                                    kp = !kp;
-                                    if(!kp) {
-                                      whiteMoney = true;
-                                    }
-                                  });
-
-                                },
-                                icon: kp ? Icons.money : Icons.credit_card,
-                                textColor: kp ? Colors.green : Colors.blue,
-                                borderColor: kp ? Colors.green : Colors.blue,
-                                fontSize: MediaQuery.of(context).size.width * .04,
-                              ),
-                              SizedBox(width: MediaQuery.of(context).size.width * .05,),
-                              Button(
-                                
-                                icon: whiteMoney ? Icons.receipt_long : Icons.assignment_late_outlined,
-                                textColor: whiteMoney ? Colors.white : Colors.black,
-                                borderColor: whiteMoney ? Colors.white : Colors.black,
-                                backgroundGradient: LinearGradient(
-                                  colors: whiteMoney ? [Colors.black, Colors.transparent] : [Color.fromARGB(115, 255, 255, 255), Color.fromARGB(32, 255, 255, 255)],
-                                  stops: [0, 1],
-                                  begin: Alignment.bottomLeft,
-                                  end: Alignment.topRight,
-                                ),
-                                fontSize: MediaQuery.of(context).size.width * .04,
-                                onPressed: () {
-                                  setState(() {
-                                    whiteMoney = !whiteMoney;
-                                    if(!whiteMoney) {
-                                      kp = true;
-                                    }
-                                  });
-                                },
-                              ),
-                            ],
-                          )
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 10,),//MediaQuery.of(context).size.width * .02,),
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width * .5) - 20 - 5,
-                        child: Section(
-                          topRight: false,
-                          topLeft: false,
-                          bottomLeft: false,
-                          bottomRight: false,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Button(
-                                onPressed: () {
-                                },
-                                icon: Icons.photo_outlined,
-                                fontSize: MediaQuery.of(context).size.width * .04,
-                              ),
-                              SizedBox(width: MediaQuery.of(context).size.width * .05,),
-                              Button(
-                                icon: Icons.camera_alt_outlined,
-                                fontSize: MediaQuery.of(context).size.width * .04,
-                                onPressed: () {},
-                              ),
-                            ],
-                          )
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10, //MediaQuery.of(context).size.width * .02,
-                  ),
-                  Section(
-                    topLeft: false,
-                    topRight: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    const SizedBox(
+                      height: 10, //MediaQuery.of(context).size.width * .02,
+                    ),
+                    Section(
+                      topLeft: false,
+                      topRight: false,
+                      bottomLeft: false,
+                      bottomRight: false,
+                      child: DateInput(
+                        labelText: "Dátum",
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w300,
+                        borderColor: Colors.white,
+                        prefixIcon: const Icon(Icons.calendar_today),
+                        inputType: TextInputType.datetime,
+                        controller: dateController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Kötelező mező!";
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10, //MediaQuery.of(context).size.width * .02,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(
-                          width: MediaQuery.of(context).size.width * .8,
-                          height: 50,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextField(
-                              onChanged: (value) {
-                                subprojectName = value;
-                              },
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Icons.attach_money),
-                                hintText: "Összeg",
-                                hintStyle: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
+                          width: (MediaQuery.of(context).size.width * .65) - 20 - 5,
+                          child: Section(
+                            key: sectionKey,
+                            topRight: false,
+                            topLeft: false,
+                            bottomRight: false,
+                            bottomLeft: false,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Button(
+                                  // width: MediaQuery.of(context).size.width * .15,
+                                  onPressed: () {
+                                    setState(() {
+                                      kp = !kp;
+                                      if (!kp) {
+                                        whiteMoney = true;
+                                      }
+                                    });
+                                  },
+                                  icon: kp ? Icons.money : Icons.credit_card,
+                                  textColor: kp ? Colors.green : const Color.fromARGB(204, 41, 140, 245),
+                                  borderColor: kp ? Colors.green : const Color.fromARGB(100, 41, 139, 245),
+                                  fontSize: MediaQuery.of(context).size.width * .04,
                                 ),
-                              ),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width * .05,
+                                ),
+                                Button(
+                                  text: whiteMoney ? "Fehér" : "Fekete",
+                                  // icon: whiteMoney
+                                  //     ? Icons.receipt_long
+                                  //     : Icons.assignment_late_outlined,
+                                  textColor: whiteMoney ? Colors.white : Colors.black,
+                                  borderColor: whiteMoney ? Colors.white : Colors.black,
+                                  backgroundGradient: LinearGradient(
+                                    colors: whiteMoney
+                                        ? [Colors.black, Colors.transparent]
+                                        : const [Color.fromARGB(115, 255, 255, 255), Color.fromARGB(32, 255, 255, 255)],
+                                    stops: const [0, 1],
+                                    begin: Alignment.bottomLeft,
+                                    end: Alignment.topRight,
+                                  ),
+                                  fontSize: MediaQuery.of(context).size.width * .04,
+                                  onPressed: () {
+                                    setState(() {
+                                      whiteMoney = !whiteMoney;
+                                      if (!whiteMoney) {
+                                        kp = true;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         ),
+                        const SizedBox(
+                          width: 10,
+                        ), //MediaQuery.of(context).size.width * .02,),
                         SizedBox(
-                          width: MediaQuery.of(context).size.width * .75,
-                          height: 50,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 4, 0, 8),
-                            child: TextField(
-                              onChanged: (value) {
-                                subprojectName = value;
-                              },
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Icons.shopping_bag_outlined, size: 20,),
-                                hintText: "Tárgy",
-                                hintStyle: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * .75,
-                          height: 50,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 4, 0, 8),
-                            child: TextField(
-                              onChanged: (value) {
-                                subprojectName = value;
-                              },
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Icons.person, size: 20,),
-                                hintText: "Ki?",
-                                hintStyle: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * .75,
-                          height: 50,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 4, 0, 8),
-                            child: TextField(
-                              onChanged: (value) {
-                                subprojectName = value;
-                              },
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Icons.text_snippet),                                hintText: "Közlemény",
-                                hintStyle: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ),
+                          width: (MediaQuery.of(context).size.width * .35) - 20 - 5,
+                          child: Section(
+                            topRight: false,
+                            topLeft: false,
+                            bottomLeft: false,
+                            bottomRight: false,
+                            child: image == null
+                                ? Button(
+                                    onPressed: () async {
+                                      await getImage(binary: true);
+                                      setState(() {
+                                        RenderBox box = sectionKey.currentContext!.findRenderObject() as RenderBox;
+                                        height = box.size.height;
+                                      });
+                                    },
+                                    textColor: const Color.fromARGB(222, 235, 89, 30),
+                                    borderColor: const Color.fromARGB(222, 235, 89, 30),
+                                    icon: Icons.photo_outlined,
+                                    fontSize: MediaQuery.of(context).size.width * .04,
+                                  )
+                                : SizedBox(
+                                    height: height - 40,
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        (kIsWeb
+                                            ? Image.network(
+                                                imageX!.path,
+                                                scale: .9,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Image.file(
+                                                image!,
+                                                scale: .9,
+                                                fit: BoxFit.cover,
+                                              )),
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: IconButton(
+                                            padding: EdgeInsets.zero,
+                                            onPressed: () {
+                                              if (!kIsWeb) image!.delete();
+                                              image = null;
+
+                                              imageX = null;
+                                              setState(() {});
+                                            },
+                                            style: ButtonStyle(
+                                              shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))),
+                                              backgroundColor: MaterialStateProperty.all(const Color.fromARGB(73, 255, 255, 255)),
+                                              padding: MaterialStateProperty.all(EdgeInsets.zero),
+                                            ),
+                                            icon: const Icon(
+                                              Icons.delete_forever_outlined,
+                                              color: Colors.black,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(
+                      height: 10, //MediaQuery.of(context).size.width * .02,
+                    ),
+                    Section(
+                      topLeft: false,
+                      topRight: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * .8,
+                            // height: 50,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                              child: TextInput(
+                                controller: amountController,
+                                onChanged: (value) {
+                                  amount = int.parse(value);
+                                },
+                                labelText: "Összeg",
+                                prefixIcon: const Icon(Icons.attach_money),
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                                inputType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Kötelező mező!";
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * .75,
+                            // height: 50,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
+                              child: TextInput(
+                                controller: objectController,
+                                onChanged: (value) {
+                                  object = value;
+                                },
+                                prefixIcon: const Icon(
+                                  Icons.shopping_bag_outlined,
+                                  size: 20,
+                                ),
+                                labelText: "Tárgy",
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * .75,
+                            // height: 50,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
+                              child: TextInput(
+                                controller: whoController,
+                                onChanged: (value) {
+                                  who = value;
+                                },
+                                prefixIcon: const Icon(
+                                  Icons.person,
+                                  size: 20,
+                                ),
+                                labelText: "Ki",
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * .75,
+                            // height: 50,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 0, 8),
+                              child: TextInput(
+                                controller: commentController,
+                                onChanged: (value) {
+                                  comment = value;
+                                },
+                                prefixIcon: const Icon(Icons.text_snippet, size: 20),
+                                labelText: "Megjegyzés",
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Button(
+                                  onPressed: () {
+                                    setState(() {
+                                      income = !income;
+                                    });
+                                  },
+                                  fontSize: 13,
+                                  textColor: Colors.white,
+                                  borderColor: income ? Colors.green : Colors.red,
+                                  backgroundGradient: LinearGradient(
+                                    colors: [(income ? Colors.green : Colors.red), Colors.transparent],
+                                    stops: const [0, 1],
+                                    begin: income ? Alignment.bottomLeft : Alignment.topRight,
+                                    end: income ? Alignment.topRight : Alignment.bottomLeft,
+                                  ),
+                                  padding: const EdgeInsets.all(5.0),
+                                  icon: income ? Icons.add : Icons.remove,
+                                  // width: MediaQuery.of(context).size.width * .35,
+                                ),
+                                Button(
+                                  onPressed: uploadData,
+                                  text: "Mentés",
+                                  fontSize: 13,
+                                  textColor: Colors.white,
+                                  borderColor: Colors.blue,
+                                  backgroundGradient: const LinearGradient(
+                                    colors: [Colors.blue, Colors.transparent],
+                                    stops: [0, 1],
+                                    begin: Alignment.bottomLeft,
+                                    end: Alignment.topRight,
+                                  ),
+                                  padding: const EdgeInsets.all(5.0),
+                                  icon: Icons.save,
+                                  spacing: MainAxisAlignment.spaceEvenly,
+                                  maxWidth: 150,
+                                  width: MediaQuery.of(context).size.width * .35,
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

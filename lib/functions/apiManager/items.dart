@@ -8,6 +8,7 @@ import 'package:leltar_2/components/WidgetItem.dart';
 import 'package:leltar_2/components/largeItem.dart';
 import 'package:leltar_2/components/settingsDialog.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
+import 'package:leltar_2/functions/apiManager/problems.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/functions/http/http.dart';
 import 'package:leltar_2/functions/itembuilder.dart';
@@ -22,6 +23,7 @@ class Item {
   final String readableID;
   late List<String> images;
   late Map<String, String> index = {};
+  late Problems? problems;
 
   Item({
     required this.id,
@@ -32,6 +34,7 @@ class Item {
     required this.created,
     required this.path,
     this.images = const [],
+    this.problems,
   });
 
   factory Item.fromJson(Map<String, dynamic> json) {
@@ -68,8 +71,7 @@ class Item {
   }
 
   Future<Map<String, String>> requestIndex() async {
-    RquestResult res =
-        await Request.get("getimgs", {"id": id.toString(), "size": "medium"});
+    RquestResult res = await Request.get("getimgs", {"id": id.toString(), "size": "medium"});
     if (res.ok) {
       dynamic data = jsonDecode(jsonDecode(res.data));
       for (var image in data) {
@@ -95,10 +97,7 @@ class Item {
     return index;
   }
 
-  Widget display(BuildContext context,
-      {ItemType type = ItemType.LARGE,
-      Function()? onPressed,
-      SettingsDialog? settings}) {
+  Widget display(BuildContext context, {ItemType type = ItemType.LARGE, Function()? onPressed, SettingsDialog? settings}) {
     onPressed ??= () {
       Navigator.pushNamed(
         context,
@@ -114,42 +113,40 @@ class Item {
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
-        image: index[type.toString().split(".")[1].toLowerCase()] == "" ||
-                index[type.toString().split(".")[1].toLowerCase()] == null
+        image: index[type.toString().split(".")[1].toLowerCase()] == "" || index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
-                image: NetworkImage(
-                    index[type.toString().split(".")[1].toLowerCase()] ?? ""),
+                image: NetworkImage(index[type.toString().split(".")[1].toLowerCase()] ?? ""),
               ),
         icon: Icons.inventory_2_outlined,
+        problem: problems != null && problems!.problems.isNotEmpty,
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
-        image: index[type.toString().split(".")[1].toLowerCase()] == "" ||
-                index[type.toString().split(".")[1].toLowerCase()] == null
+        isCategory: false,
+        image: index[type.toString().split(".")[1].toLowerCase()] == "" || index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
-                image: NetworkImage(
-                    index[type.toString().split(".")[1].toLowerCase()] ?? ""),
+                image: NetworkImage(index[type.toString().split(".")[1].toLowerCase()] ?? ""),
               ),
         icon: Icons.inventory_2_outlined,
+        problem: problems != null && problems!.problems.isNotEmpty,
       );
     } else if (type == ItemType.WIDGET) {
       return WidgetItem(
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
-        image: index[type.toString().split(".")[1].toLowerCase()] == "" ||
-                index[type.toString().split(".")[1].toLowerCase()] == null
+        image: index[type.toString().split(".")[1].toLowerCase()] == "" || index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
-                image: NetworkImage(
-                    index[type.toString().split(".")[1].toLowerCase()] ?? ""),
+                image: NetworkImage(index[type.toString().split(".")[1].toLowerCase()] ?? ""),
               ),
         icon: Icons.inventory_2_outlined,
+        problem: problems != null && problems!.problems.isNotEmpty,
       );
     } else {
       return const SizedBox();
@@ -164,6 +161,11 @@ class Item {
       ));
     }
     return imagesW;
+  }
+
+  Future<Problems> getProblems() async {
+    problems = Problems(problems: await Problems.requestProblems(id));
+    return problems!;
   }
 }
 
@@ -180,6 +182,7 @@ class Items {
     int offset = 0,
     bool updateOnLoad = false,
     Function? onLoad,
+    bool img = true,
   }) async {
     items = await Items.requestItems(
       path,
@@ -189,11 +192,11 @@ class Items {
       limit: limit,
       offset: offset,
       updateOnLoad: updateOnLoad,
+      img: img,
       onLoad: () {
         if (updateOnLoad) {
           loadedIndexes++;
           if (loadedIndexes == items.length) {
-            print("Items loaded: ${items.length}");
             onLoad?.call();
           }
         }
@@ -210,6 +213,7 @@ class Items {
     int limit = -1,
     int offset = 0,
     bool updateOnLoad = false,
+    bool img = true,
     Function? onLoad,
   }) async {
     RquestResult res = await Request.get("getData", {
@@ -223,15 +227,20 @@ class Items {
     });
     if (res.ok) {
       List<Item> items = [];
+      List<int> ids = [];
       dynamic data = jsonDecode(jsonDecode(res.data));
 
       if (data == false) return [];
       for (var item in data) {
         if (item["type"] == "item") {
           Item _item = Item.fromJson(item);
-          _item.requestIndex().then((value) {
-            if (updateOnLoad) onLoad?.call();
-          });
+          if (ids.contains(_item.id)) continue;
+          ids.add(_item.id);
+          if (img) {
+            _item.requestIndex().then((value) {
+              if (updateOnLoad) onLoad?.call();
+            });
+          }
           _item.requestImages();
           items.add(_item);
         }
@@ -247,15 +256,9 @@ class Items {
     String orderBy = "timestamp",
     String order = "ASC",
     int limit = -1,
+    bool img = true,
   }) async {
-    List<Item> _items = await requestItems(
-      path,
-      search: search,
-      orderBy: orderBy,
-      order: order,
-      limit: limit,
-      offset: items.length,
-    );
+    List<Item> _items = await requestItems(path, search: search, orderBy: orderBy, order: order, limit: limit, offset: items.length, img: img);
     if (_items.isNotEmpty) {
       for (Item element in _items) {
         if (items.any((item) => item.id == element.id)) continue;
@@ -290,10 +293,7 @@ class Items {
     String orderBy = "timestamp",
     String order = "ASC",
   }) async {
-    RquestResult res = await Request.get("getDataByQuery", {
-      "q":
-          "$query ORDER BY $orderBy $order ${limit == -1 ? "" : " LIMIT $offset, $limit"}"
-    });
+    RquestResult res = await Request.get("getDataByQuery", {"q": "$query ORDER BY $orderBy $order ${limit == -1 ? "" : " LIMIT $offset, $limit"}"});
     if (res.ok) {
       List<Item> items = [];
       for (var item in jsonDecode(jsonDecode(res.data))) {

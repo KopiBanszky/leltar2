@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
-import 'package:leltar_2/pages/HomaPage.dart';
 
 class PageViewerWithIndicatorController {
   int pageIndex = 0;
@@ -45,7 +43,6 @@ class PageViewerWithIndicator extends StatefulWidget {
 class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
     with TickerProviderStateMixin {
   late PageController _pageViewController;
-  late TabController _tabController;
   int currentPageIndex = 0;
 
   late double height;
@@ -66,10 +63,6 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
     pages = widget.pages;
     direction = widget.direction ?? Axis.horizontal;
     indicator = widget.indicator ?? true;
-    _tabController = TabController(
-      length: pages.length,
-      vsync: this,
-    );
   }
 
   @override

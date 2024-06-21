@@ -1,8 +1,10 @@
-// ignore_for_file: constant_identifier_names, prefer_typing_uninitialized_variables, non_constant_identifier_names
+// ignore_for_file: constant_identifier_names, prefer_typing_uninitialized_variables, non_constant_identifier_names, curly_braces_in_flow_control_structures
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:leltar_2/accountSystem/isLoggedIn.dart';
+import 'package:image_picker/image_picker.dart';
 
 class RquestResult {
   bool ok;
@@ -52,6 +54,30 @@ Future<RquestResult> http_delete(String route, [dynamic data]) async {
   var result = await http.delete(url,
       body: dataStr, headers: {"Content-type": "application/json"});
   return RquestResult(result.body, true);
+}
+
+Future<RquestResult> post_image(
+    String route, File? image, XFile? webFile, bool web,
+    [dynamic data]) async {
+  Uri url = PROTOCOLL_METHOD(DOMAIN, route);
+  data["userID"] = ID;
+  data["access"] = ACCESS.toString();
+  var request = http.MultipartRequest('POST', url);
+  request.fields.addAll(data);
+  if (!web)
+    request.files.add(await http.MultipartFile.fromPath(
+      'file',
+      image!.path,
+    ));
+
+  if (web)
+    request.files.add(http.MultipartFile.fromBytes(
+      'file',
+      await webFile!.readAsBytes(),
+      filename: webFile.name,
+    ));
+  var result = await request.send();
+  return RquestResult(result, true);
 }
 
 class Request {
