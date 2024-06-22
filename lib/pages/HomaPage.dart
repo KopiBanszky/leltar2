@@ -138,7 +138,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         if (mounted) setState(() {});
       });
       for (Item item in items.items) {
-        await item.getProblems();
+        item.getProblems().then((value) {
+          if (mounted) loadItems();
+        });
       }
     }
     loadItems();

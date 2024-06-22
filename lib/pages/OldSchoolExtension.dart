@@ -13,7 +13,7 @@ class OldSchoolExtension extends StatefulWidget {
 }
 
 class _OldSchoolExtensionState extends State<OldSchoolExtension> {
-  bool calculateIfSectionIsUnderUsed(int length, BuildContext context, double height) {
+  bool calculateIfSectionIsUnderUsed(int length, BuildContext context) {
     double initialHeight = MediaQuery.of(context).size.height * 0.37;
     double neadedHeight = length * 55;
 

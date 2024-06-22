@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:leltar_2/components/appBar.dart';
 import 'package:leltar_2/components/drawer.dart';
 import 'package:leltar_2/components/searchbar.dart';
@@ -411,16 +412,21 @@ class _GalleryViewState extends State<GalleryView> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       // height: MediaQuery.of(context).size.height * .5,
       width: MediaQuery.of(context).size.width * .8,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.network(
-            widget.images[pos],
-            width: MediaQuery.of(context).size.width * .8,
-            // height: MediaQuery.of(context).size.height * .8,
+          Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * .8,
+            ),
+            child: Image.network(
+              widget.images[pos],
+              width: MediaQuery.of(context).size.width * .8,
+              // height: MediaQuery.of(context).size.height * .8,
+            ),
           ),
           SizedBox(
             height: MediaQuery.of(context).size.height * .1,

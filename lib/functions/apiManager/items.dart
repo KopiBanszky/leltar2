@@ -140,6 +140,9 @@ class Item {
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
+        onHold: () {
+          print("hold");
+        },
         image: index[type.toString().split(".")[1].toLowerCase()] == "" || index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
