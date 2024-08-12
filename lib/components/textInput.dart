@@ -17,6 +17,8 @@ class TextInput extends StatefulWidget {
     this.suffixIcon,
     this.inputType = TextInputType.text,
     this.controller,
+    this.isSuggestionsOn = false,
+    this.suggestions,
   });
 
   final String? labelText;
@@ -40,6 +42,9 @@ class TextInput extends StatefulWidget {
 
   final TextEditingController? controller;
 
+  final bool? isSuggestionsOn;
+  final Future<List<String>> Function()? suggestions;
+
   @override
   State<TextInput> createState() => _TextInputState();
 }
@@ -48,85 +53,109 @@ class _TextInputState extends State<TextInput> {
   bool _isEmpty = true;
 
   void _onChanged(String value) {
+    if (_isEmpty == widget.controller!.text.trim().isEmpty) return;
     setState(() {
       _isEmpty = widget.controller!.text.trim().isEmpty || value.trim().isEmpty;
     });
-    widget.onChanged!(value);
+    widget.onChanged != null ? widget.onChanged!(value) : () {};
   }
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      onChanged: _onChanged,
-      validator: widget.validator,
-      onEditingComplete: widget.onEditingComplete,
-      onAppPrivateCommand: widget.onAppPrivateCommand,
-      keyboardType: widget.inputType,
-      style: TextStyle(
-        color: widget.color,
-        fontSize: widget.fontSize,
-        fontWeight: widget.fontWeight,
-      ),
-      cursorColor: Colors.white,
-      enableInteractiveSelection: false,
-      decoration: InputDecoration(
-        prefixIcon: widget.prefixIcon,
-        suffixIcon: widget.suffixIcon,
-        enabledBorder: _isEmpty
-            ? UnderlineInputBorder(
-                borderSide: BorderSide(
-                  width: 1,
-                  color: widget.borderColor,
-                  // style: BorderStyle.none,
-                ),
-              )
-            : const OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: Colors.transparent,
-                ),
+    if (widget.isSuggestionsOn!) {
+      widget.suggestions!.call().then((value) => print(value));
+    }
+    return Autocomplete(
+      optionsBuilder: (TextEditingValue textEditingValue) async {
+        widget.controller!.text = textEditingValue.text;
+        _onChanged(textEditingValue.text);
+        if (!widget.isSuggestionsOn!) {
+          return const Iterable<String>.empty();
+        }
+        if (textEditingValue.text == '') {
+          return const Iterable<String>.empty();
+        }
+        return (await widget.suggestions!.call()).where((String option) {
+          return option.contains(textEditingValue.text.toLowerCase());
+        });
+      },
+      fieldViewBuilder: (BuildContext context, TextEditingController fieldTextEditingController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
+        return TextFormField(
+          controller: fieldTextEditingController,
+          focusNode: fieldFocusNode,
+          validator: widget.validator,
+          onEditingComplete: widget.onEditingComplete,
+          onAppPrivateCommand: widget.onAppPrivateCommand,
+          keyboardType: widget.inputType,
+          style: TextStyle(
+            color: widget.color,
+            fontSize: widget.fontSize,
+            fontWeight: widget.fontWeight,
+          ),
+          cursorColor: Colors.white,
+          enableInteractiveSelection: false,
+          decoration: InputDecoration(
+            prefixIcon: widget.prefixIcon,
+            suffixIcon: widget.suffixIcon,
+            enabledBorder: _isEmpty
+                ? UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      width: 1,
+                      color: widget.borderColor,
+                      // style: BorderStyle.none,
+                    ),
+                  )
+                : const OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.transparent,
+                    ),
+                  ),
+            border: _isEmpty
+                ? UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      width: 1,
+                      color: widget.borderColor,
+                      // style: BorderStyle.none,
+                    ),
+                  )
+                : const OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.transparent,
+                    ),
+                  ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.transparent,
               ),
-        border: _isEmpty
-            ? UnderlineInputBorder(
-                borderSide: BorderSide(
-                  width: 1,
-                  color: widget.borderColor,
-                  // style: BorderStyle.none,
-                ),
-              )
-            : const OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: Colors.transparent,
-                ),
+            ),
+            errorBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(
+                width: 1,
+                color: Colors.red,
               ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.transparent,
+            ),
+            focusedErrorBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(
+                width: 1,
+                color: Colors.red,
+              ),
+            ),
+            errorStyle: const TextStyle(
+              color: Colors.red,
+              fontSize: 10,
+            ),
+            labelText: widget.labelText,
+            labelStyle: TextStyle(
+              color: widget.color,
+              fontSize: widget.fontSize,
+              fontWeight: widget.fontWeight,
+            ),
           ),
-        ),
-        errorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(
-            width: 1,
-            color: Colors.red,
-          ),
-        ),
-        focusedErrorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(
-            width: 1,
-            color: Colors.red,
-          ),
-        ),
-        errorStyle: const TextStyle(
-          color: Colors.red,
-          fontSize: 10,
-        ),
-        labelText: widget.labelText,
-        labelStyle: TextStyle(
-          color: widget.color,
-          fontSize: widget.fontSize,
-          fontWeight: widget.fontWeight,
-        ),
-      ),
+        );
+      },
+      onSelected: (String option) {
+        widget.controller!.text = option;
+      },
     );
   }
 }

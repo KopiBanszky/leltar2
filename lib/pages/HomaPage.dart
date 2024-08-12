@@ -1,17 +1,23 @@
 // ignore_for_file: depend_on_referenced_packages
+//import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:leltar_2/accountSystem/isLoggedIn.dart';
 import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/components/appBar.dart';
 import 'package:leltar_2/components/drawer.dart';
+import 'package:leltar_2/components/path.dart';
 import 'package:leltar_2/components/searchbar.dart';
 import 'package:leltar_2/components/settingsDialog.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/items.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:leltar_2/functions/apiManager/updateHandler.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/pages/OldSchoolExtension.dart';
+
+// import 'dart:html' as html;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,8 +43,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   ScrollController _scrollController = ScrollController();
 
-  double INITIALHEIGHT = 80.0;
+  // ignore: non_constant_identifier_names
+  final double INITIALHEIGHT = 80.0;
   double _height = 80.0;
+
+  Uri androidUrl = Uri.parse("https://drive.google.com");
+  Uri windowsUrl = Uri.parse("https://drive.google.com");
 
   int pageIndex = 0;
 
@@ -52,9 +62,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         paddingBottom: 5,
         paddingTop: 5,
         settings: settings,
+        openNew: arguments?["openNew"] ?? false,
       );
       if (categories.items.isEmpty) pageIndex = 1;
-      _height = INITIALHEIGHT;
+      // _height = INITIALHEIGHT;
       if (mounted) setState(() {});
     }
   }
@@ -70,7 +81,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         paddingTop: 5,
         settings: settings,
       );
-      _height = INITIALHEIGHT;
+      // _height = INITIALHEIGHT;
       if (mounted) setState(() {});
     }
   }
@@ -79,6 +90,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     arguments = ModalRoute.of(context)!.settings.arguments;
+    isLoggedIn(id: "none", hash: "none").then(
+      (value) => {
+        if (!value && mounted)
+          {
+            Navigator.pushReplacementNamed(context, "/login"),
+          }
+      },
+    );
 
     settings ??= arguments?["settings"];
     if (settings == null) {
@@ -100,6 +119,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     appBar = ResponsiveAppBar(
       child: Searchbar(
         title: arguments?["name"] ?? "439. Leltár",
+        onPressed: () {
+          Navigator.pushNamed(context, "/searchHelper", arguments: {"path": arguments?["route"] ?? "default", "settings": settings});
+        },
         drawerIcon: Navigator.canPop(context) ? Icons.arrow_back : null,
         drawerFunction: Navigator.canPop(context)
             ? () {
@@ -107,6 +129,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               }
             : null,
         moreFunction: () {
+          _height = INITIALHEIGHT;
           Order currentOrder = settings!.order;
           SortBy currentOrderBy = settings!.orderBy;
           settings!.display(context).then((value) {
@@ -125,6 +148,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (categories.items.isEmpty) {
       await categories.getCategories(
         arguments?["route"] ?? "default",
+        search: arguments?["search"] ?? "",
         order: ToStr.order(settings!.order),
         orderBy: ToStr.sortBy(settings!.orderBy),
       );
@@ -132,11 +156,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     loadCategories();
 
     if (items.items.isEmpty) {
-      await items.getItems(arguments?["route"] ?? "default",
-          order: ToStr.order(settings!.order), img: settings!.indexImages, orderBy: ToStr.sortBy(settings!.orderBy), updateOnLoad: true, onLoad: () {
-        loadItems();
-        if (mounted) setState(() {});
-      });
+      await items.getItems(
+        arguments?["route"] ?? "default",
+        search: arguments?["search"] ?? "",
+        order: ToStr.order(settings!.order),
+        img: settings!.indexImages,
+        orderBy: ToStr.sortBy(settings!.orderBy),
+        updateOnLoad: true,
+        onLoad: () {
+          loadItems();
+          // if (mounted) setState(() {});
+        },
+      );
       for (Item item in items.items) {
         item.getProblems().then((value) {
           if (mounted) loadItems();
@@ -144,6 +175,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
     }
     loadItems();
+    UpdateHandler updateHandler = await UpdateHandler.getUpdate();
+    if (kIsWeb || true) {
+      androidUrl = updateHandler.androidUrl;
+
+      windowsUrl = updateHandler.windowsUrl;
+    }
+    if (!kIsWeb) {
+      if (!updateHandler.isVersionOk()) {
+        if (mounted) updateHandler.showUpdateDialog(context);
+      }
+    }
   }
 
   @override
@@ -155,6 +197,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // if (kIsWeb) {
+    //   html.window.onBeforeUnload.listen((event) {
+    //     if (Navigator.canPop(context)) {
+    //       Navigator.pop(context);
+    //     }
+    //     event.preventDefault();
+    //   });
+    // }
+
     if (pageIndex == 0) {
       displayWidget = categoryWidgets;
     } else {
@@ -249,7 +300,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             onPressed: () {
               setState(() {
                 if (_height == INITIALHEIGHT) {
-                  _height = 250.0;
+                  _height = settings!.oldSchool ? 200 : 250.0;
                 } else {
                   _height = INITIALHEIGHT;
                 }
@@ -335,6 +386,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.green,
                         spacing: MainAxisAlignment.spaceEvenly,
                         width: MediaQuery.of(context).size.width * 0.2,
+                        disabled: true,
+                        disabledBorderColor: Colors.grey[700]!,
+                        disabledTextColor: Colors.grey[700]!,
                       ),
                       Button(
                         onPressed: () {},
@@ -346,7 +400,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.blue,
                         spacing: MainAxisAlignment.spaceAround,
                         width: MediaQuery.of(context).size.width * 0.4,
-                        disabled: (arguments?["route"] ?? "default") == "default",
+                        disabled: true || (arguments?["route"] ?? "default") == "default",
                         disabledBorderColor: Colors.grey[700]!,
                         disabledTextColor: Colors.grey[700]!,
                       ),
@@ -366,7 +420,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.red,
                         spacing: MainAxisAlignment.spaceEvenly,
                         width: MediaQuery.of(context).size.width * 0.25,
-                        disabled: (arguments?["route"] ?? "default") == "default",
+                        disabled: true || (arguments?["route"] ?? "default") == "default",
                         disabledBorderColor: Colors.grey[700]!,
                         disabledTextColor: Colors.grey[700]!,
                       ),
@@ -380,11 +434,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.orange,
                         spacing: MainAxisAlignment.spaceAround,
                         width: MediaQuery.of(context).size.width * 0.35,
-                        disabled: (arguments?["route"] ?? "default") == "default",
+                        disabled: true || (arguments?["route"] ?? "default") == "default",
                         disabledBorderColor: Colors.grey[700]!,
                         disabledTextColor: Colors.grey[700]!,
                       ),
                     ],
+                  ),
+                  PathComponent(
+                    path: arguments?["route"] ?? "default",
+                    settings: settings!,
+                    width: MediaQuery.of(context).size.width * 0.6 + 10,
+                    divider: Icons.arrow_forward_ios,
+                    dividerColor: Colors.grey[600]!,
+                    homeSize: 20,
+                    textColor: Colors.blue,
+                    padding: 5,
+                    openNew: arguments?["openNew"] ?? false,
                   ),
                 ],
               ),

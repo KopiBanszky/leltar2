@@ -51,9 +51,11 @@ class Category {
     ItemType type = ItemType.LARGE,
     Function()? onPressed,
     SettingsDialog? settings,
+    bool openNew = false,
   }) {
     onPressed ??= () {
-      Navigator.pushNamed(context, "/", arguments: {"route": "${path == "default" ? "" : path}${id}_", "settings": settings, "name": name, "id": id});
+      Navigator.pushNamed(context, "/",
+          arguments: {"route": "${path == "default" ? "" : path}${id}_", "settings": settings, "name": name, "id": id, "openNew": openNew});
     };
     if (type == ItemType.LARGE) {
       return LargeItem(
@@ -305,6 +307,7 @@ class Categories {
     double paddingBottom = 10,
     double paddingTop = 10,
     SettingsDialog? settings,
+    bool openNew = false,
   }) {
     List<Widget> _elements = [];
     for (var item in items) {
@@ -312,6 +315,7 @@ class Categories {
         context,
         type: type,
         settings: settings,
+        openNew: openNew,
       ));
     }
     return ItemBuilder(
@@ -322,5 +326,9 @@ class Categories {
       paddingBottom: paddingBottom,
       paddingTop: paddingTop,
     );
+  }
+
+  void clear() {
+    items.clear();
   }
 }

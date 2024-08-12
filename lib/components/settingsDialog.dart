@@ -64,7 +64,10 @@ class SettingsDialog {
   Future<SettingsDialog> load() async {
     final Localstore localstore = Localstore.instance;
     final Map<String, dynamic>? data = await localstore.collection("userData").doc("settings").get();
-    return SettingsDialog.fromJson(data!);
+    if (data == null) {
+      return this;
+    }
+    return SettingsDialog.fromJson(data);
   }
 
   late ItemType newItemType = itemType;

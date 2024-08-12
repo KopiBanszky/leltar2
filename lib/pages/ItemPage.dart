@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:leltar_2/accountSystem/isLoggedIn.dart';
 import 'package:leltar_2/components/appBar.dart';
 import 'package:leltar_2/components/drawer.dart';
 import 'package:leltar_2/components/searchbar.dart';
@@ -9,6 +10,7 @@ import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/items.dart';
 import 'package:leltar_2/functions/apiManager/problems.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
+import 'package:photo_view/photo_view.dart';
 
 class ItemPage extends StatefulWidget {
   const ItemPage({super.key});
@@ -38,9 +40,31 @@ class _ItemPageState extends State<ItemPage> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
+
+    isLoggedIn(id: "none", hash: "none").then(
+      (value) => {
+        if (!value && mounted)
+          {
+            Navigator.pushReplacementNamed(context, "/login"),
+          }
+      },
+    );
+
     arguments = ModalRoute.of(context)!.settings.arguments;
     item = arguments["item"];
-    problems = item.problems!.problems;
+    if (item.problems == null) {
+      Problems.requestProblems(item.id).then(
+        (value) => {
+          item.problems = Problems(
+            problems: value,
+          ),
+          problems = item.problems!.problems,
+          setState(() {}),
+        },
+      );
+    } else {
+      problems = item.problems!.problems;
+    }
 
     settings ??= arguments?["settings"] ??
         SettingsDialog(
@@ -63,17 +87,11 @@ class _ItemPageState extends State<ItemPage> {
         },
         moreFunction: () {},
         hint: item.finalID,
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, "/searchHelper", arguments: {"path": item.path, "settings": settings});
+        },
       ),
     );
-
-    // Problems.requestProblems(item.id).then(
-    //   (value) {
-    //     setState(() {
-    //       problems = value;
-    //     });
-    //   },
-    // );
   }
 
   Future showGalleryView(int position) {
@@ -106,9 +124,12 @@ class _ItemPageState extends State<ItemPage> {
               color: const Color.fromARGB(22, 255, 255, 255),
               borderRadius: BorderRadius.circular(3),
             ),
-            child: Image.network(
-              image,
-              height: MediaQuery.of(context).size.height * 0.2,
+            child: Hero(
+              tag: "img${item.images.indexOf(image)}",
+              child: Image.network(
+                image,
+                height: MediaQuery.of(context).size.height * 0.2,
+              ),
             ),
           ),
         ),
@@ -410,22 +431,91 @@ class _GalleryViewState extends State<GalleryView> {
     pos = widget.pos;
   }
 
+  List<Widget> buildPages(List<String> images, int initialPage) {
+    List<Widget> pages = [];
+
+    for (int i = 0; i < images.length; i++) {
+      pages.add(
+        Container(
+          width: MediaQuery.of(context).size.width * .8,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * .8,
+          ),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * .8,
+            child: PhotoView(
+              maxScale: 2.0,
+              minScale: 0.0,
+              strictScale: true,
+              enableRotation: true,
+              gaplessPlayback: true,
+              tightMode: true,
+              backgroundDecoration: const BoxDecoration(
+                color: Colors.transparent,
+              ),
+              heroAttributes: PhotoViewHeroAttributes(tag: "img$i"),
+              imageProvider: NetworkImage(
+                images[i],
+
+                // height: MediaQuery.of(context).size.height * .8,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return pages;
+  }
+
+  PageController pageController = PageController();
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       // height: MediaQuery.of(context).size.height * .5,
       width: MediaQuery.of(context).size.width * .8,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
+          /*Container(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * .8,
             ),
-            child: Image.network(
-              widget.images[pos],
+            child: SizedBox(
               width: MediaQuery.of(context).size.width * .8,
-              // height: MediaQuery.of(context).size.height * .8,
+              child: PhotoView(
+                maxScale: 2.0,
+                minScale: 0.0,
+                initialScale: PhotoViewComputedScale.contained * 1,
+                strictScale: true,
+                enableRotation: true,
+                gaplessPlayback: true,
+                tightMode: true,
+                backgroundDecoration: const BoxDecoration(
+                  color: Colors.transparent,
+                ),
+                heroAttributes: PhotoViewHeroAttributes(tag: "img$pos"),
+                imageProvider: NetworkImage(
+                  widget.images[pos],
+
+                  // height: MediaQuery.of(context).size.height * .8,
+                ),
+              ),
+            ),
+          ),*/
+          SizedBox(
+            width: MediaQuery.of(context).size.height * .8,
+            height: MediaQuery.of(context).size.height * .8,
+            child: PageView(
+              onPageChanged: (index) {
+                setState(() {
+                  pos = index;
+                });
+              },
+              scrollDirection: Axis.horizontal,
+              controller: pageController,
+              children: buildPages(widget.images, pos),
             ),
           ),
           SizedBox(
@@ -435,12 +525,13 @@ class _GalleryViewState extends State<GalleryView> {
               children: [
                 IconButton(
                   onPressed: () {
-                    if (pos > 0) {
-                      pos--;
-                    } else {
-                      pos = widget.images.length - 1;
-                    }
-                    setState(() {});
+                    // if (pos > 0) {
+                    //   pos--;
+                    // } else {
+                    //   pos = widget.images.length - 1;
+                    // }
+                    pageController.previousPage(duration: const Duration(milliseconds: 250), curve: Curves.ease);
+                    // setState(() {});
                   },
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
@@ -455,13 +546,14 @@ class _GalleryViewState extends State<GalleryView> {
                 const SizedBox(width: 10.0),
                 IconButton(
                   onPressed: () {
-                    setState(() {
-                      if (pos < widget.images.length - 1) {
-                        pos++;
-                      } else {
-                        pos = 0;
-                      }
-                    });
+                    // setState(() {
+                    //   if (pos < widget.images.length - 1) {
+                    //     pos++;
+                    //   } else {
+                    //     pos = 0;
+                    //   }
+                    pageController.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.ease);
+                    // });
                   },
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.black),

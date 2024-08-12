@@ -1,10 +1,13 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member, avoid_init_to_null, prefer_final_fields, non_constant_identifier_names
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:leltar_2/accountSystem/isLoggedIn.dart';
 import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/components/appBar.dart';
+import 'package:leltar_2/components/autoComplete.dart';
 import 'package:leltar_2/components/dateInput.dart';
 import 'package:leltar_2/components/drawer.dart';
 import 'package:leltar_2/components/searchbar.dart';
@@ -17,6 +20,7 @@ import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/functions/http/http.dart';
 // ignore: depend_on_referenced_packages
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class BillingPage extends StatefulWidget {
   const BillingPage({super.key});
@@ -44,14 +48,6 @@ class _BillingPageState extends State<BillingPage> {
   bool whiteMoney = false;
   bool kp = true; // kp = készpénz -> true = készpénz, false = bankkártya
 
-  String projectName = "Choice 1";
-  String subprojectName = "";
-
-  int amount = 0;
-  String object = "";
-  String who = "";
-  String comment = "";
-
   File? image;
   XFile? imageX;
 
@@ -72,43 +68,44 @@ class _BillingPageState extends State<BillingPage> {
       return;
     }
     if (imageX != null) {
-      await post_image("uplioadBill", kIsWeb ? null : image, kIsWeb ? imageX : null, kIsWeb, {
+      if (settings!.saveImages) {
+        final directory = await getApplicationDocumentsDirectory();
+        final path = "${directory.path}\\leltar";
+        if (await File(path).exists() == false) await Directory(path).create();
+        image!.copy("$path\\${DateTime.now().millisecondsSinceEpoch}.jpg");
+      }
+      await post_image("uploadBill", kIsWeb ? null : image, kIsWeb ? imageX : null, kIsWeb, {
         "income": (income ? 1 : 0).toString(),
         "white": (whiteMoney ? 1 : 0).toString(),
         "cash": (kp ? 1 : 0).toString(),
-        "project": projectName,
-        "subproject": subprojectName,
+        "project": projectNameController.text,
+        "subproject": subprojectNameController.text,
         "date": dateController.text,
-        "amount": amount.toString(),
-        "object": object,
-        "who": who,
-        "comment": comment,
+        "amount": amountController.text,
+        "object": objectController.text,
+        "who": whoController.text,
+        "comment": commentController.text,
         "device": "mobile",
       });
+    } else {
+      await http_post("uploadBill", {
+        "data": {
+          "income": income,
+          "white": whiteMoney,
+          "cash": kp,
+          "project": projectNameController.text,
+          "subproject": subprojectNameController.text,
+          "date": dateController.text,
+          "amount": amountController.text,
+          "object": objectController.text,
+          "who": whoController.text,
+          "comment": commentController.text,
+        },
+        "device": "unknown",
+      });
     }
-    await http_post("uploadBill", {
-      "data": {
-        "income": income,
-        "white": whiteMoney,
-        "cash": kp,
-        "project": projectName,
-        "subproject": subprojectName,
-        "date": dateController.text,
-        "amount": amount,
-        "object": object,
-        "who": who,
-        "comment": comment,
-      },
-      "device": "unknown",
-    });
     setState(() {
-      projectName = "Choice 1";
-      subprojectName = "";
-      amount = 0;
-      object = "";
-      who = "";
-      comment = "";
-      if (!kIsWeb) image!.delete();
+      if (!kIsWeb && (image != null)) image!.delete();
       image = null;
       imageX = null;
 
@@ -144,6 +141,15 @@ class _BillingPageState extends State<BillingPage> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
+    isLoggedIn(id: "none", hash: "none").then(
+      (value) => {
+        if (!value && mounted)
+          {
+            Navigator.pushReplacementNamed(context, "/login"),
+          }
+      },
+    );
+
     arguments = ModalRoute.of(context)!.settings.arguments;
 
     settings ??= arguments?["settings"] ??
@@ -231,21 +237,35 @@ class _BillingPageState extends State<BillingPage> {
                             width: MediaQuery.of(context).size.width * .8,
                             // height: 50,
                             child: Padding(
-                                padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-                                child: TextInput(
-                                  controller: projectNameController,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return "Kötelező mező!";
+                              padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                              child: TextInput(
+                                controller: projectNameController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Kötelező mező!";
+                                  }
+                                  return null;
+                                },
+                                labelText: "Projekt neve",
+                                isSuggestionsOn: true,
+                                suggestions: () async {
+                                  RquestResult value = await http_get("getBills");
+                                  if (value.ok) {
+                                    List<dynamic> data = jsonDecode(jsonDecode(value.data))["response"];
+                                    List<String> projectNames = [];
+                                    for (int i = 0; i < data.length; i++) {
+                                      if (!projectNames.contains(data[i]["project"].toString().trim().toLowerCase())) {
+                                        projectNames.add(data[i]["project"].toString().trim().toLowerCase());
+                                      }
                                     }
-                                    return null;
-                                  },
-                                  onChanged: (value) {
-                                    projectName = value;
-                                  },
-                                  labelText: "Projekt neve",
-                                )),
+                                    return projectNames;
+                                  }
+                                  return [];
+                                },
+                              ),
+                            ),
                           ),
+                          // const AutocompleteHelp(),
                           SizedBox(
                             width: MediaQuery.of(context).size.width * .75,
                             // height: 50,
@@ -253,13 +273,47 @@ class _BillingPageState extends State<BillingPage> {
                               padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
                               child: TextInput(
                                 controller: subprojectNameController,
-                                onChanged: (value) {
-                                  subprojectName = value;
-                                },
                                 labelText: "Alprojekt neve",
                                 color: Colors.white,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w300,
+                                isSuggestionsOn: true,
+                                suggestions: () async {
+                                  RquestResult value = await http_get("getBills");
+                                  if (value.ok) {
+                                    List<dynamic> data = jsonDecode(jsonDecode(value.data))["response"];
+                                    List<String> subprojectNames = [];
+                                    for (int i = 0; i < data.length; i++) {
+                                      if (!subprojectNames.contains(data[i]["subproject"].toString().trim().toLowerCase()) &&
+                                          (data[i]["subproject"].toString().trim().toLowerCase() != "")) {
+                                        subprojectNames.add(data[i]["subproject"].toString().trim().toLowerCase());
+                                      }
+                                    }
+                                    List<String> defaultProjectNames = [
+                                      "gyógyszer",
+                                      "póló",
+                                      "élelmiszer",
+                                      "előzetes élelmiszer",
+                                      "előtábor kaja",
+                                      "pb gáz",
+                                      "program kellékek",
+                                      "szemét",
+                                      "portya költekezések",
+                                      "benzin",
+                                      "teherautó",
+                                      "autó+kau",
+                                      "táborhelynézés",
+                                      "utazás"
+                                    ];
+                                    for (int i = 0; i < defaultProjectNames.length; i++) {
+                                      if (!subprojectNames.contains(defaultProjectNames[i])) {
+                                        subprojectNames.add(defaultProjectNames[i]);
+                                      }
+                                    }
+                                    return subprojectNames;
+                                  }
+                                  return [];
+                                },
                               ),
                             ),
                           ),
@@ -269,6 +323,10 @@ class _BillingPageState extends State<BillingPage> {
                     const SizedBox(
                       height: 10, //MediaQuery.of(context).size.width * .02,
                     ),
+                    // const AutocompleteHelp(),
+                    // const SizedBox(
+                    //   height: 10, //MediaQuery.of(context).size.width * .02,
+                    // ),
                     Section(
                       topLeft: false,
                       topRight: false,
@@ -442,9 +500,6 @@ class _BillingPageState extends State<BillingPage> {
                               padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                               child: TextInput(
                                 controller: amountController,
-                                onChanged: (value) {
-                                  amount = int.parse(value);
-                                },
                                 labelText: "Összeg",
                                 prefixIcon: const Icon(Icons.attach_money),
                                 color: Colors.white,
@@ -467,9 +522,6 @@ class _BillingPageState extends State<BillingPage> {
                               padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
                               child: TextInput(
                                 controller: objectController,
-                                onChanged: (value) {
-                                  object = value;
-                                },
                                 prefixIcon: const Icon(
                                   Icons.shopping_bag_outlined,
                                   size: 20,
@@ -488,9 +540,6 @@ class _BillingPageState extends State<BillingPage> {
                               padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
                               child: TextInput(
                                 controller: whoController,
-                                onChanged: (value) {
-                                  who = value;
-                                },
                                 prefixIcon: const Icon(
                                   Icons.person,
                                   size: 20,
@@ -509,9 +558,6 @@ class _BillingPageState extends State<BillingPage> {
                               padding: const EdgeInsets.fromLTRB(16, 8, 0, 8),
                               child: TextInput(
                                 controller: commentController,
-                                onChanged: (value) {
-                                  comment = value;
-                                },
                                 prefixIcon: const Icon(Icons.text_snippet, size: 20),
                                 labelText: "Megjegyzés",
                                 color: Colors.white,

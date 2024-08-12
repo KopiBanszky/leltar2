@@ -38,6 +38,8 @@ class _OldSchoolExtensionState extends State<OldSchoolExtension> {
               height: calculateHeight(widget.categoriesLength, context) +
                   (MediaQuery.of(context).size.height * 0.37 - calculateHeight(widget.itemsLength, context)),
               child: Section(
+                // bottomLeft: false,
+                // bottomRight: false,
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
                 child: SingleChildScrollView(
                   child: widget.categoriesWidget,
@@ -53,6 +55,8 @@ class _OldSchoolExtensionState extends State<OldSchoolExtension> {
               height: calculateHeight(widget.itemsLength, context) +
                   (MediaQuery.of(context).size.height * 0.37 - calculateHeight(widget.categoriesLength, context)),
               child: Section(
+                // topLeft: false,
+                // topRight: false,
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
                 child: SingleChildScrollView(
                   child: widget.itemsWidget,

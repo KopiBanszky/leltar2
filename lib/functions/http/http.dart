@@ -15,9 +15,11 @@ class RquestResult {
 const PROTOCOL = "https";
 const PROTOCOLL_METHOD = Uri.https;
 const DOMAIN = "app.439boldogasszony.hu";
+const VERSION = "2.0.51";
 // const DOMAIN = "192.168.1.69:9081";
 
 Future<RquestResult> http_get(String route, [dynamic data]) async {
+  data ??= Map<String, dynamic>();
   //var dataStr = jsonEncode(data);//.replaceAll(":", "=").replaceAll(",", "&").replaceAll("{", "").replaceAll("}", "");
   data["userID"] = ID;
   data["access"] = ACCESS.toString();
@@ -31,8 +33,7 @@ Future<RquestResult> http_post(String route, [dynamic data]) async {
   data["userID"] = ID;
   data["access"] = ACCESS.toString();
   var dataStr = jsonEncode(data);
-  var result = await http
-      .post(url, body: dataStr, headers: {"Content-type": "application/json"});
+  var result = await http.post(url, body: dataStr, headers: {"Content-type": "application/json"});
   return RquestResult(result.body, true);
 }
 
@@ -41,8 +42,7 @@ Future<RquestResult> http_put(String route, [dynamic data]) async {
   data["userID"] = ID;
   data["access"] = ACCESS.toString();
   var dataStr = jsonEncode(data);
-  var result = await http
-      .put(url, body: dataStr, headers: {"Content-type": "application/json"});
+  var result = await http.put(url, body: dataStr, headers: {"Content-type": "application/json"});
   return RquestResult(result.body, true);
 }
 
@@ -51,33 +51,39 @@ Future<RquestResult> http_delete(String route, [dynamic data]) async {
   data["userID"] = ID;
   data["access"] = ACCESS.toString();
   var dataStr = jsonEncode(data);
-  var result = await http.delete(url,
-      body: dataStr, headers: {"Content-type": "application/json"});
+  var result = await http.delete(url, body: dataStr, headers: {"Content-type": "application/json"});
   return RquestResult(result.body, true);
 }
 
-Future<RquestResult> post_image(
-    String route, File? image, XFile? webFile, bool web,
-    [dynamic data]) async {
+Future<RquestResult> post_image(String route, File? image, XFile? webFile, bool web, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
   data["userID"] = ID;
   data["access"] = ACCESS.toString();
   var request = http.MultipartRequest('POST', url);
   request.fields.addAll(data);
-  if (!web)
+  print(request.fields);
+  print(image!.path);
+  if (!web) {
+    print("NEMWEB");
+    print(image.path);
     request.files.add(await http.MultipartFile.fromPath(
-      'file',
+      'files',
       image!.path,
     ));
+  }
 
-  if (web)
+  if (web) {
+    print("WEB");
+    print(webFile!.name);
     request.files.add(http.MultipartFile.fromBytes(
-      'file',
+      'files',
       await webFile!.readAsBytes(),
       filename: webFile.name,
     ));
+  }
+  print(request.files.first.filename);
   var result = await request.send();
-  return RquestResult(result, true);
+  return RquestResult(result, result.statusCode >= 200 && result.statusCode < 300);
 }
 
 class Request {

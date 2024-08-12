@@ -41,13 +41,15 @@ dev_dependencies:
     sdk: flutter
 
   http: ^1.2.1
-  path_provider: ^2.0.2
+  path_provider: ^2.1.3
   google_nav_bar: ^5.0.6
   intl: ^0.19.0
   image_picker: ^1.1.2
   image_picker_for_web: ^3.0.4
   files_uploader: ^0.1.1
   localstore: ^1.4.0
+  photo_view: ^0.15.0
+  url_launcher: ^6.3.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

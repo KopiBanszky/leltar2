@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/components/appBar.dart';
@@ -10,7 +10,7 @@ import 'package:leltar_2/components/section.dart';
 import 'package:leltar_2/components/settingsDialog.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
-import 'package:localstore/localstore.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -21,7 +21,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   dynamic arguments;
-  final _db = Localstore.getInstance(useSupportDir: true);
   // ignore: unused_field
   StreamSubscription<Map<String, dynamic>>? _subscription;
 
@@ -37,22 +36,34 @@ class _SettingsPageState extends State<SettingsPage> {
   double INITIALHEIGHT = 80.0;
   double _height = 80.0;
 
+  late Directory? directory;
+  late String path;
+
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
     arguments = ModalRoute.of(context)!.settings.arguments;
 
-    settings ??= arguments?["settings"] ??
-        SettingsDialog(
-          itemType: ItemType.LARGE,
-          categoryType: ItemType.LARGE,
-          order: Order.ASC,
-          orderBy: SortBy.ID,
-          columns: 1,
-          oldSchool: false,
-          indexImages: true,
-          saveImages: true,
-        );
+    directory = await getApplicationDocumentsDirectory();
+    path = "${directory!.path}\\leltar\\";
+
+    if (settings == null) {
+      settings = arguments?["settings"] ??
+          SettingsDialog(
+            itemType: ItemType.LARGE,
+            categoryType: ItemType.LARGE,
+            order: Order.ASC,
+            orderBy: SortBy.ID,
+            columns: 1,
+            oldSchool: false,
+            indexImages: true,
+            saveImages: true,
+          );
+
+      settings!.load().then((value) => setState(() {
+            settings = value;
+          }));
+    }
 
     appBar = ResponsiveAppBar(
       child: Searchbar(
@@ -60,17 +71,20 @@ class _SettingsPageState extends State<SettingsPage> {
         drawerIcon: null,
         drawerFunction: null,
         moreFunction: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, "/searchHelper", arguments: {"path": "default", "settings": settings});
+        },
       ),
     );
   }
 
   @override
   void initState() {
-    _subscription = _db.collection('userData').stream.listen((event) {
-      settings = SettingsDialog.fromJson(event);
-      setState(() {});
-    });
-    if (kIsWeb) _db.collection('userData').stream.asBroadcastStream();
+    // _subscription = _db.collection('userData').stream.listen((event) {
+    //   settings = SettingsDialog.fromJson(event);
+    //   setState(() {});
+    // });
+    // if (kIsWeb) _db.collection('userData').stream.asBroadcastStream();
     super.initState();
   }
 
@@ -208,10 +222,10 @@ class _SettingsPageState extends State<SettingsPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Row(
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   "Képek mentése lokálisan",
                                   style: TextStyle(
                                     fontSize: 15,
@@ -219,11 +233,12 @@ class _SettingsPageState extends State<SettingsPage> {
                                   ),
                                 ),
                                 Tooltip(
-                                  message: "Képek mentése a készülék memóriájára, biztonsági mentésként. Csak az általad készült képeket menti.",
-                                  showDuration: Duration(seconds: 5),
+                                  message:
+                                      "Képek mentése a készülék memóriájára, biztonsági mentésként. Csak az általad készült képeket menti.\n Mentések helye: $path",
+                                  showDuration: const Duration(seconds: 5),
                                   enableTapToDismiss: true,
                                   preferBelow: false,
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.help_outline,
                                     size: 15,
                                     color: Color.fromARGB(255, 190, 190, 190),

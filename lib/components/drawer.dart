@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:leltar_2/accountSystem/isLoggedIn.dart';
 import 'package:leltar_2/components/section.dart';
 
 class BasicDrawer extends StatelessWidget {
@@ -64,12 +66,12 @@ class BasicDrawer extends StatelessWidget {
               Icons.settings,
               color: Colors.white,
             ),
-            title: const Section(
+            title: Section(
               topLeft: false,
               bottomLeft: false,
-              bottomRight: false,
+              bottomRight: ACCESS <= 2,
               topRight: false,
-              child: Text(
+              child: const Text(
                 'Beállítások',
                 style: TextStyle(
                   color: Colors.white,
@@ -80,24 +82,47 @@ class BasicDrawer extends StatelessWidget {
               Navigator.pushReplacementNamed(context, "/settings");
             },
           ),
+          if (ACCESS >= 3)
+            ListTile(
+              leading: const Icon(
+                Icons.money,
+                color: Colors.white,
+              ),
+              title: const Section(
+                topLeft: false,
+                bottomLeft: false,
+                topRight: false,
+                bottomRight: false,
+                child: Text(
+                  "Számla",
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, "/billingPage");
+              },
+            ),
           ListTile(
             leading: const Icon(
-              Icons.money,
-              color: Colors.white,
+              Icons.logout,
+              color: Colors.red,
             ),
             title: const Section(
               topLeft: false,
               bottomLeft: false,
               topRight: false,
               child: Text(
-                "Számla",
+                "Logout",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.red,
                 ),
               ),
             ),
             onTap: () {
-              Navigator.pushReplacementNamed(context, "/billingPage");
+              logout();
+              Navigator.pushReplacementNamed(context, "/login");
             },
           ),
         ],

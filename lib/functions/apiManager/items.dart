@@ -50,6 +50,54 @@ class Item {
     );
   }
 
+  static Future<Item> requestItem({
+    int id = -1,
+    String name = "",
+    String path = "",
+    String readableID = "",
+    String finalID = "",
+    String description = "",
+    String search = "",
+  }) async {
+    if (search != "") {
+      List<Item> items = await Items.requestItems("items", search: search, limit: 1);
+      if (items.isNotEmpty) {
+        return items[0];
+      }
+      return Item(
+        id: -1,
+        name: "none",
+        description: "none",
+        readableID: "none",
+        finalID: "none",
+        created: DateTime.now(),
+        path: "none",
+      );
+    } else {
+      String query = "";
+      if (id != -1) query += "items.id = $id OR ";
+      if (name != "") query += "items.name = $name OR ";
+      if (path != "") query += "items.path = $path OR ";
+      if (readableID != "") query += "items.readableID = $readableID OR ";
+      if (finalID != "") query += "items.finalID = $finalID OR ";
+      if (description != "") query += "items.description = $description OR ";
+      query = query.substring(0, query.length - 4);
+      RquestResult res = await http_get("getDataByQuery", {"q": query});
+      if (res.ok) {
+        return Item.fromJson(jsonDecode(jsonDecode(res.data)));
+      }
+      return Item(
+        id: -1,
+        name: "none",
+        description: "none",
+        readableID: "none",
+        finalID: "none",
+        created: DateTime.now(),
+        path: "none",
+      );
+    }
+  }
+
   void addImage(String image) {
     images.add(image);
   }
@@ -310,7 +358,7 @@ class Items {
     return [];
   }
 
-  Future<List<Item>> getCategoriesByQuery(
+  Future<List<Item>> getItemsByQuery(
     String query, {
     int offset = 0,
     int limit = -1,
@@ -378,5 +426,9 @@ class Items {
       paddingBottom: paddingBottom,
       paddingTop: paddingTop,
     );
+  }
+
+  void clear() {
+    items = [];
   }
 }
