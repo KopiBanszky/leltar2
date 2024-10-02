@@ -227,7 +227,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   if (kIsWeb)
                     Positioned(
-                      bottom: 50,
+                      bottom: MediaQuery.of(context).size.height < 680 ? null : 50,
+                      top: MediaQuery.of(context).size.height < 680 ? 0 : null,
                       left: 0,
                       right: 0,
                       child: Row(
