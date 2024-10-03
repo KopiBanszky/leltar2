@@ -63,8 +63,6 @@ class Category {
         description: description,
         onPressed: onPressed as dynamic Function(),
         icon: icon,
-        selected: false,
-        selectionOn: false,
         settings: settings,
       );
     } else if (type == ItemType.LIST) {

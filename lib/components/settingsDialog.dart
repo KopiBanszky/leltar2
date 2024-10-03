@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:leltar_2/components/Button.dart';
+import 'package:leltar_2/components/searchbar.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:localstore/localstore.dart';
@@ -19,6 +20,10 @@ class SettingsDialog {
   late bool indexImages;
   late bool saveImages;
   late bool selectionON = false;
+  late Function? homeSetState;
+  final GlobalKey<SearchbarState> searchbarKey = GlobalKey<SearchbarState>();
+
+  List<int> selected = [];
 
   SettingsDialog({
     required this.itemType,
@@ -29,6 +34,7 @@ class SettingsDialog {
     required this.oldSchool,
     required this.indexImages,
     required this.saveImages,
+    this.homeSetState
   });
 
   factory SettingsDialog.fromJson(Map<String, dynamic> json) {
@@ -138,9 +144,37 @@ class SettingsDialog {
     selectionON = on;
   }
 
+  bool isSelected(int id) {
+    return selected.contains(id);
+  }
+
+  void select(int id) {
+    selected.add(id);
+  }
+
+  void deselect(int id) {
+    selected.remove(id);
+  }
+
+  void clearSelection() {
+    selected.clear();
+  }
+
   bool switchSelection() {
     selectionON = !selectionON;
     return selectionON;
+  }
+
+  void setHomeSetState(Function setState) {
+    homeSetState = setState;
+  }
+
+  bool callHomeSetState() {
+    if(homeSetState == null) {
+      return false;
+    }
+    homeSetState!(() {});
+    return true;
   }
 
   Future<bool> display(BuildContext context) async {

@@ -22,16 +22,20 @@ class Searchbar extends StatefulWidget {
   final Function()? onPressed;
 
   @override
-  State<Searchbar> createState() => _SearchbarState();
+  State<Searchbar> createState() => SearchbarState();
 }
 
-class _SearchbarState extends State<Searchbar> {
+class SearchbarState extends State<Searchbar> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   late Function()? drawerFunction;
   late Function()? moreFunction;
   late IconData? drawerIcon;
   late IconData? moreIcon;
   late String title;
+
+  void outerSetState() {
+    setState(() {});
+  }
 
   @override
   void initState() {

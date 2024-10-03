@@ -161,7 +161,8 @@ class _BillingPageState extends State<BillingPage> {
             columns: 1,
             oldSchool: false,
             indexImages: true,
-            saveImages: true);
+            saveImages: true,
+            );
 
     appBar = ResponsiveAppBar(
       child: Searchbar(

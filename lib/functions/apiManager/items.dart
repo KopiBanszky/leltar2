@@ -13,6 +13,7 @@ import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/functions/http/http.dart';
 import 'package:leltar_2/functions/itembuilder.dart';
 
+
 class Item {
   final int id;
   final String name;
@@ -25,7 +26,7 @@ class Item {
   late Map<String, String> index = {};
   late Problems? problems;
   bool selected = false;
-  bool selectionOn = false;
+  final GlobalKey<LargeItemState> largeItemKey = GlobalKey<LargeItemState>();
 
   Item({
     required this.id,
@@ -147,7 +148,7 @@ class Item {
     return index;
   }
 
-  Widget display(BuildContext context, {ItemType type = ItemType.LARGE, Function()? onPressed, Function()? onHold, SettingsDialog? settings}) {
+  Widget display(BuildContext context, SettingsDialog settings,{ItemType type = ItemType.LARGE, Function()? onPressed, Function()? onHold}) {
     onPressed ??= () {
       Navigator.pushNamed(
         context,
@@ -162,6 +163,7 @@ class Item {
 
     if (type == ItemType.LARGE) {
       return LargeItem(
+        key: largeItemKey,
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
@@ -173,8 +175,7 @@ class Item {
               ),
         icon: Icons.inventory_2_outlined,
         problem: problems != null && problems!.problems.isNotEmpty,
-        selected: selected,
-        selectionOn: selectionOn,
+        settings: settings,
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
@@ -227,9 +228,9 @@ class Item {
   }
 
   //does not setState
-  void switchSelection(bool selection, bool isSelected) {
-    selectionOn = selection;
+  void switchSelection(bool isSelected, VoidCallback callback) {
     selected = isSelected;
+    largeItemKey.currentState!.setStateFromeOutside(isSelected, callback);
   }
 }
 
@@ -237,12 +238,21 @@ class Items {
   late List<Item> items = [];
   int loadedIndexes = 0;
 
-  void onHold(int id, SettingsDialog? settings) {
-    print(id);
-    settings!.setSelection(true);
+  void onHold(int id, SettingsDialog settings) {
+    settings.setSelection(true);
+    settings.select(id);
+    print(settings.callHomeSetState());
+    settings.searchbarKey.currentState!.outerSetState();
     for (var element in items) {
-      print(element.id);
-      element.switchSelection(true, settings.isSelected(element.id));
+      callback() {
+        if (settings.isSelected(element.id)) {
+          settings.deselect(element.id);
+        } else {
+          settings.select(element.id);
+        }
+        element.switchSelection(settings.isSelected(element.id), callback);
+      }
+      element.switchSelection(settings.isSelected(element.id), callback);
     }
   }
 
@@ -437,20 +447,13 @@ class Items {
   }) {
     List<Widget> elements = [];
     for (var item in items) {
-      elements.add(item.display(context, type: type, settings: settings, onHold: () => onHold(item.id, settings),
-        onPressed: settings!.selectionON ? () {
-          if (settings.isSelected(item.id)) {
-            settings.deselect(item.id);
-          } else {
-            settings.select(item.id);
-          }
-          item.switchSelection(true, settings.isSelected(item.id));
-        } : null,
+      elements.add(item.display(context, settings, type: type, onHold: () => onHold(item.id, settings),
+        
       ));
       // print(item.name);
     }
     return ItemBuilder(
-      key: ValueKey<DateTime>(DateTime.now()),
+      // key: ValueKey<DateTime>(DateTime.now()),
       elements: elements,
       column: column,
       width: width,

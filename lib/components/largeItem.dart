@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:leltar_2/components/settingsDialog.dart';
 
 class LargeItem extends StatefulWidget {
   const LargeItem({
-    super.key,
+    Key? key,
     required this.name,
     required this.description,
     required this.onPressed,
-    required this.selected,
     this.onHold,
     this.image,
     this.icon = Icons.open_in_new_outlined,
     this.problem = false,
-  });
+    required this.settings,
+
+  }) : super(key: key);
 
   final String name;
   final String description;
@@ -20,16 +22,25 @@ class LargeItem extends StatefulWidget {
   final Function() onPressed;
   final Function()? onHold;
   final bool problem;
-  final bool selected;
+  final SettingsDialog settings;
 
   @override
-  _LargeItemState createState() => _LargeItemState();
+  LargeItemState createState() => LargeItemState();
 }
 
-class _LargeItemState extends State<LargeItem> {
+class LargeItemState extends State<LargeItem> {
+  bool selected = false;
+  VoidCallback pressOnHold = () {};
+  
+  void setStateFromeOutside(bool isSelected, VoidCallback pressOnHoldNew) {
+    setState(() {
+      pressOnHold = pressOnHoldNew;
+      selected = isSelected;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    print("largeItem: ${widget.name} and selection: ${widget.selected}");
     return Stack(
       children: [
         ElevatedButton(
@@ -45,7 +56,7 @@ class _LargeItemState extends State<LargeItem> {
             elevation: WidgetStateProperty.all<double>(0),
             padding: WidgetStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.all(0)),
           ),
-          onPressed: widget.onPressed,
+          onPressed: widget.settings.selectionON ? pressOnHold : widget.onPressed,
           onLongPress: () {
             setState(() {
               widget.onHold!();
@@ -158,12 +169,12 @@ class _LargeItemState extends State<LargeItem> {
             ),
           ),
         ),
-        if(widget.selected) Positioned(
+        if(widget.settings.selectionON) Positioned(
           top: 0,
-          right: 0,
+          left: 0,
           child: IconButton(
-            icon: const Icon(
-              Icons.check_circle,
+            icon: Icon(
+              selected ? Icons.check_circle : Icons.circle_outlined,
               color: Colors.white,
             ),
             onPressed: () {},

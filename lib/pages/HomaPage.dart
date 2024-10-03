@@ -56,12 +56,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (mounted) {
       categoryWidgets = categories.display(
         context,
+        settings!,
         type: settings!.categoryType,
         column: settings!.categoryType == ItemType.WIDGET ? 2 : 1,
         width: MediaQuery.sizeOf(context).width * 0.9,
         paddingBottom: 5,
         paddingTop: 5,
-        settings: settings,
         openNew: arguments?["openNew"] ?? false,
       );
       if (categories.items.isEmpty) pageIndex = 1;
@@ -74,12 +74,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (mounted) {
       itemWidgets = items.display(
         context,
+        settings!,
         type: settings!.itemType,
         column: settings!.itemType == ItemType.WIDGET ? 2 : 1,
         width: MediaQuery.sizeOf(context).width * 0.9,
         paddingBottom: 5,
         paddingTop: 5,
-        settings: settings,
       );
       // _height = INITIALHEIGHT;
       if (mounted) setState(() {});
@@ -112,17 +112,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         columns: 1,
       );
       settings!.load().then((value) => setState(() {
-            settings = value;
-          }));
+          settings = value;
+        })
+      );
+
+      settings!.setHomeSetState(setState);
     }
 
     appBar = ResponsiveAppBar(
       child: Searchbar(
+        key: settings!.searchbarKey,
         title: arguments?["name"] ?? "439. Leltár",
         onPressed: () {
           Navigator.pushNamed(context, "/searchHelper", arguments: {"path": arguments?["route"] ?? "default", "settings": settings});
         },
-        drawerIcon: Navigator.canPop(context) ? Icons.arrow_back : null,
+        drawerIcon: settings!.selectionON ? Icons.one_x_mobiledata : Navigator.canPop(context) ? Icons.arrow_back : null,
         drawerFunction: Navigator.canPop(context)
             ? () {
                 Navigator.pop(context);
@@ -205,6 +209,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     //     event.preventDefault();
     //   });
     // }
+    print("state rebuild");
 
     if (pageIndex == 0) {
       displayWidget = categoryWidgets;

@@ -10,6 +10,7 @@ import 'package:leltar_2/pages/SettingsPage.dart';
 import 'package:localstore/localstore.dart';
 
 void main() {
+
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MaterialApp(
