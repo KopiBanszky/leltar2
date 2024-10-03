@@ -24,6 +24,8 @@ class Item {
   late List<String> images;
   late Map<String, String> index = {};
   late Problems? problems;
+  bool selected = false;
+  bool selectionOn = false;
 
   Item({
     required this.id,
@@ -145,7 +147,7 @@ class Item {
     return index;
   }
 
-  Widget display(BuildContext context, {ItemType type = ItemType.LARGE, Function()? onPressed, SettingsDialog? settings}) {
+  Widget display(BuildContext context, {ItemType type = ItemType.LARGE, Function()? onPressed, Function()? onHold, SettingsDialog? settings}) {
     onPressed ??= () {
       Navigator.pushNamed(
         context,
@@ -156,11 +158,14 @@ class Item {
         },
       );
     };
+
+
     if (type == ItemType.LARGE) {
       return LargeItem(
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
+        onHold: onHold,
         image: index[type.toString().split(".")[1].toLowerCase()] == "" || index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
@@ -168,6 +173,8 @@ class Item {
               ),
         icon: Icons.inventory_2_outlined,
         problem: problems != null && problems!.problems.isNotEmpty,
+        selected: selected,
+        selectionOn: selectionOn,
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
@@ -218,11 +225,26 @@ class Item {
     problems = Problems(problems: await Problems.requestProblems(id));
     return problems!;
   }
+
+  //does not setState
+  void switchSelection(bool selection, bool isSelected) {
+    selectionOn = selection;
+    selected = isSelected;
+  }
 }
 
 class Items {
   late List<Item> items = [];
   int loadedIndexes = 0;
+
+  void onHold(int id, SettingsDialog? settings) {
+    print(id);
+    settings!.setSelection(true);
+    for (var element in items) {
+      print(element.id);
+      element.switchSelection(true, settings.isSelected(element.id));
+    }
+  }
 
   Future<List<Item>> getItems(
     String path, {
@@ -405,17 +427,26 @@ class Items {
   }
 
   Widget display(
-    BuildContext context, {
+    BuildContext context, SettingsDialog settings,{
     ItemType type = ItemType.WIDGET,
     int column = 1,
     double width = 300,
     double paddingBottom = 10,
     double paddingTop = 10,
-    SettingsDialog? settings,
+    
   }) {
     List<Widget> elements = [];
     for (var item in items) {
-      elements.add(item.display(context, type: type, settings: settings));
+      elements.add(item.display(context, type: type, settings: settings, onHold: () => onHold(item.id, settings),
+        onPressed: settings!.selectionON ? () {
+          if (settings.isSelected(item.id)) {
+            settings.deselect(item.id);
+          } else {
+            settings.select(item.id);
+          }
+          item.switchSelection(true, settings.isSelected(item.id));
+        } : null,
+      ));
       // print(item.name);
     }
     return ItemBuilder(

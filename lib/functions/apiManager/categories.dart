@@ -47,10 +47,10 @@ class Category {
   }
 
   Widget display(
-    BuildContext context, {
+    BuildContext context, 
+    SettingsDialog settings, {
     ItemType type = ItemType.LARGE,
     Function()? onPressed,
-    SettingsDialog? settings,
     bool openNew = false,
   }) {
     onPressed ??= () {
@@ -63,6 +63,9 @@ class Category {
         description: description,
         onPressed: onPressed as dynamic Function(),
         icon: icon,
+        selected: false,
+        selectionOn: false,
+        settings: settings,
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
@@ -300,21 +303,21 @@ class Categories {
   }
 
   Widget display(
-    BuildContext context, {
+    BuildContext context, 
+    SettingsDialog settings, {
     ItemType type = ItemType.WIDGET,
     int column = 1,
     double width = 300,
     double paddingBottom = 10,
     double paddingTop = 10,
-    SettingsDialog? settings,
     bool openNew = false,
   }) {
     List<Widget> _elements = [];
     for (var item in items) {
       _elements.add(item.display(
         context,
+        settings,
         type: type,
-        settings: settings,
         openNew: openNew,
       ));
     }
