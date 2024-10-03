@@ -18,6 +18,7 @@ class SettingsDialog {
   late bool oldSchool;
   late bool indexImages;
   late bool saveImages;
+  late bool selectionON = false;
 
   SettingsDialog({
     required this.itemType,
@@ -132,6 +133,15 @@ class SettingsDialog {
   void readFromFile() {}
 
   void saveToFile() {}
+
+  void setSelection(bool on) {
+    selectionON = on;
+  }
+
+  bool switchSelection() {
+    selectionON = !selectionON;
+    return selectionON;
+  }
 
   Future<bool> display(BuildContext context) async {
     await showDialog(
