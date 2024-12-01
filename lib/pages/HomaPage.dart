@@ -1,20 +1,26 @@
 // ignore_for_file: depend_on_referenced_packages
 //import 'dart:io' show Platform;
 
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:leltar_2/accountSystem/isLoggedIn.dart';
 import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/components/appBar.dart';
 import 'package:leltar_2/components/drawer.dart';
+import 'package:leltar_2/components/largeItem.dart';
 import 'package:leltar_2/components/path.dart';
 import 'package:leltar_2/components/searchbar.dart';
 import 'package:leltar_2/components/settingsDialog.dart';
+import 'package:leltar_2/components/snackBar.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/items.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:leltar_2/functions/apiManager/updateHandler.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
+import 'package:leltar_2/functions/http/http.dart';
+import 'package:leltar_2/helper/alertDialogue.dart';
 import 'package:leltar_2/pages/OldSchoolExtension.dart';
 
 // import 'dart:html' as html;
@@ -29,7 +35,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   dynamic arguments;
 
-  late ResponsiveAppBar appBar;
+  late ResponsiveAppBar appBar = ResponsiveAppBar();
 
   late Categories categories;
   late Widget categoryWidgets = const SizedBox();
@@ -42,6 +48,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late SettingsDialog? settings = null;
 
   ScrollController _scrollController = ScrollController();
+
+  GlobalKey<SearchbarState> searchbarKey = GlobalKey<SearchbarState>();
+  late Searchbar? searchbar = null;
 
   // ignore: non_constant_identifier_names
   final double INITIALHEIGHT = 80.0;
@@ -111,6 +120,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         indexImages: true,
         columns: 1,
       );
+      settings!.setSearchbarKey(searchbarKey);
       settings!.load().then((value) => setState(() {
           settings = value;
         })
@@ -119,35 +129,35 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       settings!.setHomeSetState(setState);
     }
 
-    appBar = ResponsiveAppBar(
-      child: Searchbar(
-        key: settings!.searchbarKey,
-        title: arguments?["name"] ?? "439. Leltár",
-        onPressed: () {
+    searchbar ??= Searchbar.empty(key: searchbarKey, settings: settings!, onPressed: () {
           Navigator.pushNamed(context, "/searchHelper", arguments: {"path": arguments?["route"] ?? "default", "settings": settings});
-        },
-        drawerIcon: settings!.selectionON ? Icons.one_x_mobiledata : Navigator.canPop(context) ? Icons.arrow_back : null,
-        drawerFunction: Navigator.canPop(context)
-            ? () {
-                Navigator.pop(context);
-              }
-            : null,
-        moreFunction: () {
-          _height = INITIALHEIGHT;
-          Order currentOrder = settings!.order;
-          SortBy currentOrderBy = settings!.orderBy;
-          settings!.display(context).then((value) {
-            if (value) {
-              if (currentOrderBy != settings!.getOrderBy() || currentOrder != settings!.getOrder()) {
-                items.sortItemsBy(settings!.getOrderBy(), settings!.getOrder());
-                categories.sortItemsBy(settings!.getOrderBy(), settings!.getOrder());
-              }
-              loadItems();
-              loadCategories();
-            }
-          });
-        },
-      ),
+        });
+    
+    searchbar!.setTitle(arguments?["name"] ?? "439. Leltár");
+    searchbar!.setDrawerIcon(Navigator.canPop(context) ? Icons.arrow_back : null);
+    searchbar!.setDrawerFunction(Navigator.canPop(context)
+        ? () {
+            Navigator.pop(context);
+          }
+        : null);
+    searchbar!.setMoreFunction(() {
+      _height = INITIALHEIGHT;
+      Order currentOrder = settings!.order;
+      SortBy currentOrderBy = settings!.orderBy;
+      settings!.display(context).then((value) {
+        if (value) {
+          if (currentOrderBy != settings!.getOrderBy() || currentOrder != settings!.getOrder()) {
+            items.sortItemsBy(settings!.getOrderBy(), settings!.getOrder());
+            categories.sortItemsBy(settings!.getOrderBy(), settings!.getOrder());
+          }
+          loadItems();
+          loadCategories();
+        }
+      });
+    });
+
+    appBar = ResponsiveAppBar(
+      child: searchbar,
     );
     if (categories.items.isEmpty) {
       await categories.getCategories(
@@ -209,8 +219,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     //     event.preventDefault();
     //   });
     // }
-    print("state rebuild");
-
     if (pageIndex == 0) {
       displayWidget = categoryWidgets;
     } else {
@@ -391,7 +399,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.green,
                         spacing: MainAxisAlignment.spaceEvenly,
                         width: MediaQuery.of(context).size.width * 0.2,
-                        disabled: true,
+                        disabled: false,
                         disabledBorderColor: Colors.grey[700]!,
                         disabledTextColor: Colors.grey[700]!,
                       ),
@@ -405,7 +413,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.blue,
                         spacing: MainAxisAlignment.spaceAround,
                         width: MediaQuery.of(context).size.width * 0.4,
-                        disabled: true || (arguments?["route"] ?? "default") == "default",
+                        disabled:  (arguments?["route"] ?? "default") == "default",
                         disabledBorderColor: Colors.grey[700]!,
                         disabledTextColor: Colors.grey[700]!,
                       ),
@@ -416,16 +424,74 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Button(
-                        onPressed: () {},
+                        onPressed: () {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (context) => AlertDialogWidget(
+                                content: const Text("A művelet nem visszafordítható!"),
+                                title: "Biztosan törlöd?",
+                                mainActionText: "Igen",
+                                secondaryActionText: "Mégse",
+                                mainAction: () {
+                                  if(settings!.selectionON) {
+                                    Request.delete("deleteElements", {
+                                      "ids": jsonEncode(settings!.selected),
+                                    }).then((value) {
+                                      if (value.ok) {
+                                        CustomSnackbar.show(context, "Sikeres törlés");
+                                      } else {
+                                        CustomSnackbar.show(context, "Sikertelen törlés, hiba történt");
+                                      }
+                                    });
+                                    settings!.setSelection(false);
+                                    items.items.removeWhere((e) => settings!.selected.contains(e.id));
+                                    categories.items.removeWhere((e) => settings!.selected.contains(e.id));
+                                    settings!.selected.clear();
+                                    for (GlobalKey element in settings!.largeItemKeys) {
+                                      GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
+                                      try {
+                                        key.currentState!.setStateFromeOutside(false, () {});
+                                      } catch (e) {
+                                        print(e);
+                                      }
+                                    }
+                                    settings!.searchbarKey.currentState!.outerSetState(() {});
+                                    loadCategories();
+                                    loadItems();
+                                    Navigator.pop(context);
+                                    setState(() {});
+                                  }
+                                },
+                                secondaryAction: () {
+                                  Navigator.pop(context);
+                                  
+                                  settings!.setSelection(false);
+                                  settings!.selected.clear();
+                                  for (GlobalKey element in settings!.largeItemKeys) {
+                                    GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
+                                    try {
+                                      key.currentState!.setStateFromeOutside(false, () {});
+                                    } catch (e) {
+                                      print(e);
+                                    }
+                                  }
+                                  settings!.searchbarKey.currentState!.outerSetState(() {});
+
+                                  setState(() {});
+                                },
+                              )
+                            );
+                        },
                         text: "Törlés",
-                        icon: Icons.folder_delete_outlined,
+                        icon: settings!.selectionON ? Icons.delete_sweep : Icons.folder_delete_outlined,
                         fontSize: 15,
                         padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                         textColor: Colors.red,
                         borderColor: Colors.red,
                         spacing: MainAxisAlignment.spaceEvenly,
                         width: MediaQuery.of(context).size.width * 0.25,
-                        disabled: true || (arguments?["route"] ?? "default") == "default",
+                        disabled: settings!.selectionON ? false : (arguments?["route"] ?? "default") == "default",
                         disabledBorderColor: Colors.grey[700]!,
                         disabledTextColor: Colors.grey[700]!,
                       ),
@@ -439,7 +505,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         borderColor: Colors.orange,
                         spacing: MainAxisAlignment.spaceAround,
                         width: MediaQuery.of(context).size.width * 0.35,
-                        disabled: true || (arguments?["route"] ?? "default") == "default",
+                        disabled: (arguments?["route"] ?? "default") == "default",
                         disabledBorderColor: Colors.grey[700]!,
                         disabledTextColor: Colors.grey[700]!,
                       ),

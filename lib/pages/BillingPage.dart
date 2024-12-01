@@ -166,6 +166,7 @@ class _BillingPageState extends State<BillingPage> {
 
     appBar = ResponsiveAppBar(
       child: Searchbar(
+        settings: settings!,
         title: "439. Számlák",
         drawerIcon: null,
         drawerFunction: null,

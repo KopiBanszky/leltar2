@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:leltar_2/components/ListItem.dart';
 import 'package:leltar_2/components/WidgetItem.dart';
 import 'package:leltar_2/components/largeItem.dart';
+import 'package:leltar_2/components/searchbar.dart';
 import 'package:leltar_2/components/settingsDialog.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/functions/http/http.dart';
@@ -21,6 +22,8 @@ class Category {
   final String readableID;
   final String finalID;
   late IconData icon;
+  bool selected = false;
+  final GlobalKey<LargeItemState> largeCategoryKey = GlobalKey<LargeItemState>();
 
   Category({
     required this.id,
@@ -52,18 +55,40 @@ class Category {
     ItemType type = ItemType.LARGE,
     Function()? onPressed,
     bool openNew = false,
+    Function()? onHold,
   }) {
-    onPressed ??= () {
-      Navigator.pushNamed(context, "/",
+    onPressed ??= () async {
+      GlobalKey<SearchbarState> searchBarKey = settings.searchbarKey;
+      print("oldKey: ${searchBarKey.toString()}");
+      await Navigator.pushNamed(context, "/",
           arguments: {"route": "${path == "default" ? "" : path}${id}_", "settings": settings, "name": name, "id": id, "openNew": openNew});
+      settings.searchbarKey = searchBarKey;
+      print("newKey: ${settings.searchbarKey.toString()}");
+      if(settings.searchbarKey.currentState != null)
+        print("keyState: ${settings.searchbarKey.currentState!.title}");
+      else print("keyState: default");
     };
     if (type == ItemType.LARGE) {
       return LargeItem(
+        key: largeCategoryKey,
+        id: id,
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
         icon: icon,
         settings: settings,
+        onHold: onHold,
+        afterHoldPress: () {
+          callback() {
+            if (settings.isSelected(id)) {
+              settings.deselect(id);
+            } else {
+              settings.select(id);
+            }
+            switchSelection(settings.isSelected(id), callback);
+          }
+          callback();
+        },
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
@@ -83,6 +108,12 @@ class Category {
     } else {
       return const SizedBox();
     }
+  }
+  
+  //does not setState
+  void switchSelection(bool isSelected, VoidCallback callback) {
+    selected = isSelected;
+    largeCategoryKey.currentState!.setStateFromeOutside(isSelected, callback);
   }
 }
 
@@ -140,7 +171,45 @@ class ToStr {
 
 class Categories {
   late List<Category> items = [];
+  int loadedIndexes = 0;
 
+  void onHold(int id, SettingsDialog settings) {
+    settings.setSelection(true);
+    settings.select(id);
+    settings.callHomeSetState();
+    settings.searchbarKey.currentState!.outerSetState(() {
+      settings.setSelection(false);
+      settings.selected.clear();
+
+      // for(var element in items) {
+      //   element.switchSelection(false, () {});
+      // }
+
+      for (GlobalKey element in settings.largeItemKeys) {
+        GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
+        try {
+          key.currentState!.setStateFromeOutside(false, () {});
+        } catch (e) {
+          print(e);
+        }
+      }
+
+
+      settings.searchbarKey.currentState!.outerSetState(() {});
+      
+    });
+    for (var element in items) {
+      callback() {
+        if (settings.isSelected(element.id)) {
+          settings.deselect(element.id);
+        } else {
+          settings.select(element.id);
+        }
+        element.switchSelection(settings.isSelected(element.id), callback);
+      }
+      element.switchSelection(settings.isSelected(element.id), callback);
+    }
+  }
   Future<List<Category>> getCategories(
     String path, {
     String search = "",
@@ -317,6 +386,7 @@ class Categories {
         settings,
         type: type,
         openNew: openNew,
+        onHold: () => onHold(item.id, settings)
       ));
     }
     return ItemBuilder(

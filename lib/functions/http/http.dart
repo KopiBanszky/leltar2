@@ -14,13 +14,14 @@ class RquestResult {
 
 const PROTOCOL = "https";
 const PROTOCOLL_METHOD = Uri.https;
-const DOMAIN = "app.439boldogasszony.hu";
-const VERSION = "2.0.51";
+const DOMAIN = "db.439boldogasszony.hu";
+const VERSION = "2.0.5";
 // const DOMAIN = "192.168.1.69:9081";
 
 Future<RquestResult> http_get(String route, [dynamic data]) async {
   data ??= Map<String, dynamic>();
   //var dataStr = jsonEncode(data);//.replaceAll(":", "=").replaceAll(",", "&").replaceAll("{", "").replaceAll("}", "");
+
   data["userID"] = ID;
   data["access"] = ACCESS.toString();
   Uri url = PROTOCOLL_METHOD(DOMAIN, route, data);

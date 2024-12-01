@@ -21,7 +21,7 @@ class UpdateHandler {
   });
 
   static Future<UpdateHandler> getUpdate() async {
-    RquestResult result = await http_get("testConnection");
+    RquestResult result = await http_get("testConnection",);
     if (result.ok) {
       dynamic data = jsonDecode(jsonDecode(result.data));
       return UpdateHandler(

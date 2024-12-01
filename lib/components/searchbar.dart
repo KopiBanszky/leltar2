@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:leltar_2/components/settingsDialog.dart';
+
 
 class Searchbar extends StatefulWidget {
-  const Searchbar({
+  Searchbar({
     super.key,
     this.drawerIcon,
     this.drawerFunction,
@@ -11,18 +13,57 @@ class Searchbar extends StatefulWidget {
     required this.title,
     this.hint = "keresés",
     this.onPressed,
+    required this.settings,
   });
 
-  final IconData? drawerIcon;
-  final Function()? drawerFunction;
-  final IconData? moreIcon;
-  final Function()? moreFunction;
-  final String title;
-  final String hint;
+  Searchbar.empty({
+    super.key,
+    this.drawerIcon,
+    this.drawerFunction,
+    this.moreIcon,
+    this.moreFunction,
+    this.title = "Keresés",
+    this.hint = "keresés",
+    this.onPressed,
+    required this.settings,
+  });
+
+  
+  late IconData? drawerIcon;
+  late Function()? drawerFunction;
+  late IconData? moreIcon;
+  Function()? moreFunction;
+  late String title;
+  late String hint;
   final Function()? onPressed;
+  final SettingsDialog settings;
+
+
+  void setDrawerFunction(Function()? function) {
+    drawerFunction = function;
+  }
+  void setMoreFunction(Function()? function) {
+    moreFunction = function;
+  }
+  void setDrawerIcon(IconData? icon) {
+    drawerIcon = icon;
+  }
+  void setMoreIcon(IconData? icon) {
+    moreIcon = icon;
+  }
+  void setTitle(String newTitle) {
+    title = newTitle;
+  }
+  void setHint(String newHint) {
+    hint = newHint;
+  }
+
+
 
   @override
   State<Searchbar> createState() => SearchbarState();
+
+  
 }
 
 class SearchbarState extends State<Searchbar> {
@@ -32,9 +73,17 @@ class SearchbarState extends State<Searchbar> {
   late IconData? drawerIcon;
   late IconData? moreIcon;
   late String title;
+  
+  Function()? outerFunction;
 
-  void outerSetState() {
+  void outerSetState(Function()? function) {
+    outerFunction = function;
     setState(() {});
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
@@ -45,6 +94,7 @@ class SearchbarState extends State<Searchbar> {
     drawerIcon = widget.drawerIcon ?? Icons.sort_outlined;
     moreIcon = widget.moreIcon;
     title = widget.title;
+    if(widget.key != null) widget.settings.searchbarKey = widget.key as GlobalKey<SearchbarState>;
   }
 
   @override
@@ -72,17 +122,19 @@ class SearchbarState extends State<Searchbar> {
             children: [
               IconButton(
                 icon: Icon(
-                  drawerIcon ?? Icons.sort_outlined,
+                  widget.settings.selectionON ? Icons.close : (drawerIcon ?? Icons.sort_outlined),
                   color: Colors.white,
                 ),
-                onPressed: drawerFunction,
+                onPressed: () {
+                  (widget.settings.selectionON ? outerFunction : drawerFunction)!.call();
+                },
               ),
               Expanded(
                 child: TextButton(
                     style: const ButtonStyle(
                       alignment: AlignmentDirectional.centerStart,
                     ),
-                    onPressed: widget.onPressed ??
+                    onPressed: widget.settings.selectionON ? null : widget.onPressed ??
                         () {
                           Navigator.pushNamed(context, "/searchHelper");
                         },
@@ -106,7 +158,7 @@ class SearchbarState extends State<Searchbar> {
                         ),
                         Expanded(
                           child: Text(
-                            widget.hint,
+                            widget.settings.selectionON ? "kijelölés" : widget.hint,
                             maxLines: 1,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
@@ -120,22 +172,22 @@ class SearchbarState extends State<Searchbar> {
               ),
               ElevatedButton(
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(
+                  backgroundColor: WidgetStateProperty.all<Color>(
                     Colors.transparent,
                   ),
-                  shadowColor: MaterialStateProperty.all<Color>(
+                  shadowColor: WidgetStateProperty.all<Color>(
                     Colors.transparent,
                   ),
-                  overlayColor: MaterialStateProperty.all<Color>(
+                  overlayColor: WidgetStateProperty.all<Color>(
                     Colors.transparent,
                   ),
-                  foregroundColor: MaterialStateProperty.all<Color>(
+                  foregroundColor: WidgetStateProperty.all<Color>(
                     Colors.transparent,
                   ),
-                  surfaceTintColor: MaterialStateProperty.all<Color>(
+                  surfaceTintColor: WidgetStateProperty.all<Color>(
                     Colors.transparent,
                   ),
-                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                  padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
                     const EdgeInsets.all(kIsWeb ? 12 : 6),
                   ),
                 ),

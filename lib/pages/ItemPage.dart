@@ -25,7 +25,7 @@ class _ItemPageState extends State<ItemPage> {
   final GlobalKey sectionKey = GlobalKey();
   double height = 0.0;
 
-  late ResponsiveAppBar appBar;
+  late ResponsiveAppBar appBar = ResponsiveAppBar();
 
   late SettingsDialog? settings = null;
 
@@ -36,6 +36,9 @@ class _ItemPageState extends State<ItemPage> {
 
   late Item item;
   late List<Problem> problems = [];
+
+  GlobalKey<SearchbarState> searchbarKey = GlobalKey<SearchbarState>();
+  late Searchbar? searchbar = null;
 
   @override
   void didChangeDependencies() async {
@@ -78,19 +81,19 @@ class _ItemPageState extends State<ItemPage> {
           saveImages: true,
         );
 
+    searchbar ??= Searchbar.empty(key: searchbarKey, settings: settings!, onPressed: () {
+          Navigator.pushNamed(context, "/searchHelper", arguments: {"path": arguments?["route"] ?? "default", "settings": settings});
+        });
+    
+    searchbar!.setTitle(item.name);
+    searchbar!.setHint(item.finalID);
+    searchbar!.setDrawerIcon(Icons.arrow_back);
+    searchbar!.setDrawerFunction(() {
+            Navigator.pop(context);
+          });
+    searchbar!.setMoreFunction(() {});
     appBar = ResponsiveAppBar(
-      child: Searchbar(
-        title: item.name,
-        drawerIcon: Icons.arrow_back,
-        drawerFunction: () {
-          Navigator.pop(context);
-        },
-        moreFunction: () {},
-        hint: item.finalID,
-        onPressed: () {
-          Navigator.pushNamed(context, "/searchHelper", arguments: {"path": item.path, "settings": settings});
-        },
-      ),
+      child: searchbar,
     );
   }
 

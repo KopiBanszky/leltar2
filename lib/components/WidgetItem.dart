@@ -24,16 +24,16 @@ class WidgetItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ButtonStyle(
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
         ),
-        maximumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.sizeOf(context).width * .4, 187)),
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        maximumSize: WidgetStateProperty.all<Size>(Size(MediaQuery.sizeOf(context).width * .4, 187)),
+        backgroundColor: WidgetStateProperty.all<Color>(Colors.transparent),
         // shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
         // elevation: MaterialStateProperty.all<double>(0),
-        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.all(0)),
+        padding: WidgetStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.all(0)),
       ),
       onPressed: onPressed,
       onLongPress: onHold,

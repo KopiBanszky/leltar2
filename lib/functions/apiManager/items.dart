@@ -149,6 +149,7 @@ class Item {
   }
 
   Widget display(BuildContext context, SettingsDialog settings,{ItemType type = ItemType.LARGE, Function()? onPressed, Function()? onHold}) {
+    
     onPressed ??= () {
       Navigator.pushNamed(
         context,
@@ -164,6 +165,7 @@ class Item {
     if (type == ItemType.LARGE) {
       return LargeItem(
         key: largeItemKey,
+        id: id,
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
@@ -176,6 +178,17 @@ class Item {
         icon: Icons.inventory_2_outlined,
         problem: problems != null && problems!.problems.isNotEmpty,
         settings: settings,
+        afterHoldPress: () {
+          callback() {
+            if (settings.isSelected(id)) {
+              settings.deselect(id);
+            } else {
+              settings.select(id);
+            }
+            switchSelection(settings.isSelected(id), callback);
+          }
+          callback();
+        },
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
@@ -234,6 +247,13 @@ class Item {
   }
 }
 
+
+
+
+
+
+
+
 class Items {
   late List<Item> items = [];
   int loadedIndexes = 0;
@@ -241,8 +261,26 @@ class Items {
   void onHold(int id, SettingsDialog settings) {
     settings.setSelection(true);
     settings.select(id);
-    print(settings.callHomeSetState());
-    settings.searchbarKey.currentState!.outerSetState();
+    settings.callHomeSetState();
+    settings.searchbarKey.currentState!.outerSetState(() {
+      settings.setSelection(false);
+      settings.selected.clear();
+
+      // for(var emelent in items) {
+      //   emelent.switchSelection(false, () {});
+      // }
+      for (GlobalKey element in settings.largeItemKeys) {
+        GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
+        try {
+          key.currentState!.setStateFromeOutside(false, () {});
+        } catch (e) {
+          print(e);
+        }
+      }
+
+      settings.searchbarKey.currentState!.outerSetState(() {});
+      
+    });
     for (var element in items) {
       callback() {
         if (settings.isSelected(element.id)) {
@@ -447,10 +485,7 @@ class Items {
   }) {
     List<Widget> elements = [];
     for (var item in items) {
-      elements.add(item.display(context, settings, type: type, onHold: () => onHold(item.id, settings),
-        
-      ));
-      // print(item.name);
+      elements.add(item.display(context, settings, type: type, onHold: () => onHold(item.id, settings),));
     }
     return ItemBuilder(
       // key: ValueKey<DateTime>(DateTime.now()),

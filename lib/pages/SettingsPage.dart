@@ -27,29 +27,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final GlobalKey sectionKey = GlobalKey();
   double height = 0.0;
 
-  late ResponsiveAppBar appBar;
 
-  late SettingsDialog? settings = null;
-
-  ScrollController _scrollController = ScrollController();
-
-  double INITIALHEIGHT = 80.0;
-  double _height = 80.0;
-
-  late Directory? directory;
-  late String path;
-
-  @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
-    arguments = ModalRoute.of(context)!.settings.arguments;
-
-    directory = await getApplicationDocumentsDirectory();
-    path = "${directory!.path}\\leltar\\";
-
-    if (settings == null) {
-      settings = arguments?["settings"] ??
-          SettingsDialog(
+  late SettingsDialog settings = SettingsDialog(
             itemType: ItemType.LARGE,
             categoryType: ItemType.LARGE,
             order: Order.ASC,
@@ -60,13 +39,47 @@ class _SettingsPageState extends State<SettingsPage> {
             saveImages: true,
           );
 
-      settings!.load().then((value) => setState(() {
-            settings = value;
-          }));
-    }
+  ScrollController _scrollController = ScrollController();
 
+  double INITIALHEIGHT = 80.0;
+  double _height = 80.0;
+
+  late Directory? directory;
+  late String? path = "";
+
+  late ResponsiveAppBar appBar = ResponsiveAppBar(
+      child: SizedBox()
+    );
+
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    print("didChangeDependencies");
+    arguments = ModalRoute.of(context)!.settings.arguments;
+
+    directory = await getApplicationDocumentsDirectory();
+    path = "${directory!.path}\\leltar\\";
+
+    settings = arguments?["settings"] ??
+        SettingsDialog(
+          itemType: ItemType.LARGE,
+          categoryType: ItemType.LARGE,
+          order: Order.ASC,
+          orderBy: SortBy.ID,
+          columns: 1,
+          oldSchool: false,
+          indexImages: true,
+          saveImages: true,
+        );
+
+    settings.load().then((value) => setState(() {
+          settings = value;
+        }));
+
+    print("appBar");
     appBar = ResponsiveAppBar(
       child: Searchbar(
+        settings: settings!,
         title: "Beállítások",
         drawerIcon: null,
         drawerFunction: null,
@@ -114,6 +127,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("build");
     return Scaffold(
       backgroundColor: const Color(
         0xFF1d2428,

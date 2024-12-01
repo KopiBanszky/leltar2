@@ -21,9 +21,10 @@ class SettingsDialog {
   late bool saveImages;
   late bool selectionON = false;
   late Function? homeSetState;
-  final GlobalKey<SearchbarState> searchbarKey = GlobalKey<SearchbarState>();
+  GlobalKey<SearchbarState> searchbarKey = GlobalKey<SearchbarState>();
 
   List<int> selected = [];
+  List<GlobalKey> largeItemKeys = [];
 
   SettingsDialog({
     required this.itemType,
@@ -167,6 +168,11 @@ class SettingsDialog {
 
   void setHomeSetState(Function setState) {
     homeSetState = setState;
+  }
+
+  void setSearchbarKey(GlobalKey<SearchbarState> key) {
+    print("settings new key: $key");
+    searchbarKey = key;
   }
 
   bool callHomeSetState() {
