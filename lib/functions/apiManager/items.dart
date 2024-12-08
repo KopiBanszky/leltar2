@@ -27,6 +27,8 @@ class Item {
   late Problems? problems;
   bool selected = false;
   final GlobalKey<LargeItemState> largeItemKey = GlobalKey<LargeItemState>();
+  final GlobalKey<WidgetItemState> widgetItemKey = GlobalKey<WidgetItemState>();
+  final GlobalKey<ListItemState> listItemKey = GlobalKey<ListItemState>();
 
   Item({
     required this.id,
@@ -192,6 +194,8 @@ class Item {
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
+        key: listItemKey,
+        id: id,
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
@@ -203,15 +207,26 @@ class Item {
               ),
         icon: Icons.inventory_2_outlined,
         problem: problems != null && problems!.problems.isNotEmpty,
+        settings: settings,
+        afterHoldPress: () {
+          callback() {
+            if (settings.isSelected(id)) {
+              settings.deselect(id);
+            } else {
+              settings.select(id);
+            }
+            switchSelection(settings.isSelected(id), callback);
+          }
+          callback();
+        },
       );
     } else if (type == ItemType.WIDGET) {
       return WidgetItem(
+        key: widgetItemKey,
+        id: id,
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
-        onHold: () {
-          print("hold");
-        },
         image: index[type.toString().split(".")[1].toLowerCase()] == "" || index[type.toString().split(".")[1].toLowerCase()] == null
             ? null
             : Image(
@@ -219,6 +234,19 @@ class Item {
               ),
         icon: Icons.inventory_2_outlined,
         problem: problems != null && problems!.problems.isNotEmpty,
+        settings: settings,
+        onHold: onHold,
+        afterHoldPress: () {
+          callback() {
+            if (settings.isSelected(id)) {
+              settings.deselect(id);
+            } else {
+              settings.select(id);
+            }
+            switchSelection(settings.isSelected(id), callback);
+          }
+          callback();
+        },
       );
     } else {
       return const SizedBox();
@@ -243,7 +271,15 @@ class Item {
   //does not setState
   void switchSelection(bool isSelected, VoidCallback callback) {
     selected = isSelected;
-    largeItemKey.currentState!.setStateFromeOutside(isSelected, callback);
+    try{
+      largeItemKey.currentState!.setStateFromeOutside(isSelected, callback);
+    } catch(e) {}
+    try{
+      widgetItemKey.currentState!.setStateFromeOutside(isSelected, callback);
+    } catch(e) {}
+    try {
+      listItemKey.currentState!.setStateFromeOutside(isSelected, callback);
+    } catch(e) {}
   }
 }
 
@@ -269,12 +305,30 @@ class Items {
       // for(var emelent in items) {
       //   emelent.switchSelection(false, () {});
       // }
-      for (GlobalKey element in settings.largeItemKeys) {
-        GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
-        try {
-          key.currentState!.setStateFromeOutside(false, () {});
-        } catch (e) {
-          print(e);
+      for (GlobalKey element in settings.itemKeys) {
+        if(element is GlobalKey<WidgetItemState> ) {
+          GlobalKey<WidgetItemState> key = element as GlobalKey<WidgetItemState>;
+          try {
+            key.currentState!.setStateFromeOutside(false, () {});
+          } catch (e) {
+            print(e);
+          }
+        }
+        if(element is GlobalKey<LargeItemState>) {
+          GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
+          try {
+            key.currentState!.setStateFromeOutside(false, () {});
+          } catch (e) {
+            print(e);
+          }
+        }
+        if(element is GlobalKey<ListItemState>) {
+          GlobalKey<ListItemState> key = element as GlobalKey<ListItemState>;
+          try {
+            key.currentState!.setStateFromeOutside(false, () {});
+          } catch (e) {
+            print(e);
+          }
         }
       }
 
@@ -294,7 +348,7 @@ class Items {
     }
   }
 
-  Future<List<Item>> getItems(
+  Future<List<Item>>  getItems(
     String path, {
     String search = "",
     String orderBy = "timestamp",
@@ -350,7 +404,6 @@ class Items {
       List<Item> items = [];
       List<int> ids = [];
       dynamic data = jsonDecode(jsonDecode(res.data));
-
       if (data == false) return [];
       for (var item in data) {
         if (item["type"] == "item") {

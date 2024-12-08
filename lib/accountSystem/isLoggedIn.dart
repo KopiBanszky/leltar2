@@ -5,7 +5,7 @@ import 'package:leltar_2/functions/http/http.dart';
 import 'package:localstore/localstore.dart';
 
 int ACCESS = 3;
-String ID = "1669570296671";
+String ID = "17328348390280";
 
 Future<Map<String, dynamic>?> readFile() async {
   final Localstore localstore = Localstore.instance;
@@ -44,9 +44,9 @@ Future<bool> isLoggedIn({required String id, required String hash}) async {
     dynamic data = jsonDecode(jsonDecode(result.data));
     if (result.ok) {
       if (data["ok"]) {
-        await writeFile(data["data"]["id"].toString(), data["data"]["hash"]);
         ACCESS = data["data"]["access"];
         ID = data["data"]["id"];
+        await writeFile(data["data"]["id"].toString(), data["data"]["hash"]);
         return true;
       }
       return false;

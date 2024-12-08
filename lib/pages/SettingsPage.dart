@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:leltar_2/components/Button.dart';
 import 'package:leltar_2/components/appBar.dart';
@@ -11,6 +12,7 @@ import 'package:leltar_2/components/settingsDialog.dart';
 import 'package:leltar_2/functions/apiManager/categories.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:localstore/localstore.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -27,6 +29,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final GlobalKey sectionKey = GlobalKey();
   double height = 0.0;
 
+  final _db = Localstore.instance;
+  bool _loaded = false;
 
   late SettingsDialog settings = SettingsDialog(
             itemType: ItemType.LARGE,
@@ -60,7 +64,8 @@ class _SettingsPageState extends State<SettingsPage> {
     directory = await getApplicationDocumentsDirectory();
     path = "${directory!.path}\\leltar\\";
 
-    settings = arguments?["settings"] ??
+    if(!_loaded) {
+      settings = arguments?["settings"] ??
         SettingsDialog(
           itemType: ItemType.LARGE,
           categoryType: ItemType.LARGE,
@@ -72,9 +77,11 @@ class _SettingsPageState extends State<SettingsPage> {
           saveImages: true,
         );
 
-    settings.load().then((value) => setState(() {
-          settings = value;
-        }));
+      settings.load().then((value) => setState(() {
+            settings = value;
+            _loaded = true;
+          }));
+    }
 
     print("appBar");
     appBar = ResponsiveAppBar(
@@ -127,7 +134,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("build");
     return Scaffold(
       backgroundColor: const Color(
         0xFF1d2428,
@@ -209,11 +215,11 @@ class _SettingsPageState extends State<SettingsPage> {
                             Button(
                               onPressed: () {
                                 setState(() {
-                                  settings!.indexImages = !settings!.indexImages;
-                                  settings!.save();
+                                  settings.indexImages = !settings.indexImages;
+                                  settings.save();
                                 });
                               },
-                              icon: settings!.indexImages ? Icons.image : Icons.image_not_supported_outlined,
+                              icon: settings.indexImages ? Icons.image : Icons.image_not_supported_outlined,
                               backgroundGradient: const LinearGradient(
                                 colors: [
                                   Color.fromARGB(40, 41, 140, 245),
@@ -222,8 +228,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                 begin: Alignment.centerLeft,
                                 end: Alignment.centerRight,
                               ),
-                              borderColor: settings!.indexImages ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 114, 114, 114),
-                              textColor: settings!.indexImages ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 114, 114, 114),
+                              borderColor: settings.indexImages ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 114, 114, 114),
+                              textColor: settings.indexImages ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 114, 114, 114),
                               duration: 200,
                               fontSize: 14,
                               padding: EdgeInsets.zero,
@@ -263,11 +269,11 @@ class _SettingsPageState extends State<SettingsPage> {
                             Button(
                               onPressed: () {
                                 setState(() {
-                                  settings!.saveImages = !settings!.saveImages;
-                                  settings!.save();
+                                  settings.saveImages = !settings.saveImages;
+                                  settings.save();
                                 });
                               },
-                              icon: settings!.saveImages ? Icons.save_alt : Icons.image_not_supported_outlined,
+                              icon: settings.saveImages ? Icons.save_alt : Icons.image_not_supported_outlined,
                               backgroundGradient: const LinearGradient(
                                 colors: [
                                   Color.fromARGB(40, 41, 140, 245),
@@ -276,8 +282,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                 begin: Alignment.centerLeft,
                                 end: Alignment.centerRight,
                               ),
-                              borderColor: settings!.saveImages ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 114, 114, 114),
-                              textColor: settings!.saveImages ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 114, 114, 114),
+                              borderColor: settings.saveImages ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 114, 114, 114),
+                              textColor: settings.saveImages ? const Color.fromARGB(255, 41, 140, 245) : const Color.fromARGB(255, 114, 114, 114),
                               duration: 200,
                               fontSize: 14,
                               padding: EdgeInsets.zero,
@@ -322,14 +328,14 @@ class _SettingsPageState extends State<SettingsPage> {
                                       child: Material(
                                         color: Colors.transparent,
                                         child: Switch(
-                                          value: settings!.oldSchool,
+                                          value: settings.oldSchool,
                                           onChanged: (value) {
                                             setState(() {
-                                              settings!.categoryType = ItemType.LIST;
-                                              settings!.itemType = ItemType.LIST;
-                                              settings!.oldSchool = value;
+                                              settings.categoryType = ItemType.LIST;
+                                              settings.itemType = ItemType.LIST;
+                                              settings.oldSchool = value;
 
-                                              settings!.save();
+                                              settings.save();
                                             });
                                           },
                                           activeColor: Colors.orange,
@@ -374,52 +380,52 @@ class _SettingsPageState extends State<SettingsPage> {
                             Button(
                               onPressed: () {
                                 setState(() {
-                                  settings!.categoryType = ItemType.LIST;
+                                  settings.categoryType = ItemType.LIST;
                                 });
                               },
                               icon: Icons.list,
                               fontSize: 30,
                               padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              backgroundGradient: settings!.categoryType == ItemType.LIST ? focused : unFocused,
-                              borderColor: settings!.categoryType != ItemType.LIST ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
-                              textColor: settings!.categoryType != ItemType.LIST ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
+                              backgroundGradient: settings.categoryType == ItemType.LIST ? focused : unFocused,
+                              borderColor: settings.categoryType != ItemType.LIST ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
+                              textColor: settings.categoryType != ItemType.LIST ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
                               duration: 200,
                             ),
                             Button(
                               onPressed: () {
                                 setState(() {
-                                  settings!.oldSchool = false;
-                                  settings!.categoryType = ItemType.WIDGET;
-                                  settings!.save();
+                                  settings.oldSchool = false;
+                                  settings.categoryType = ItemType.WIDGET;
+                                  settings.save();
                                 });
                               },
                               icon: Icons.view_comfy_outlined,
                               fontSize: 30,
                               padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              backgroundGradient: settings!.categoryType == ItemType.WIDGET ? focused : unFocused,
-                              borderColor: settings!.categoryType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
-                              textColor: settings!.categoryType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
+                              backgroundGradient: settings.categoryType == ItemType.WIDGET ? focused : unFocused,
+                              borderColor: settings.categoryType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
+                              textColor: settings.categoryType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
                               duration: 200,
-                              disabled: settings!.oldSchool,
+                              disabled: settings.oldSchool,
                               disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                               disabledTextColor: Colors.grey,
                             ),
                             Button(
                               onPressed: () {
                                 setState(() {
-                                  settings!.oldSchool = false;
-                                  settings!.categoryType = ItemType.LARGE;
-                                  settings!.save();
+                                  settings.oldSchool = false;
+                                  settings.categoryType = ItemType.LARGE;
+                                  settings.save();
                                 });
                               },
                               icon: Icons.view_day_outlined,
                               fontSize: 30,
                               padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              backgroundGradient: settings!.categoryType == ItemType.LARGE ? focused : unFocused,
-                              borderColor: settings!.categoryType != ItemType.LARGE ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
-                              textColor: settings!.categoryType != ItemType.LARGE ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
+                              backgroundGradient: settings.categoryType == ItemType.LARGE ? focused : unFocused,
+                              borderColor: settings.categoryType != ItemType.LARGE ? Colors.white : const Color.fromARGB(130, 41, 140, 245),
+                              textColor: settings.categoryType != ItemType.LARGE ? Colors.white : const Color.fromARGB(255, 41, 140, 245),
                               duration: 200,
-                              disabled: settings!.oldSchool,
+                              disabled: settings.oldSchool,
                               disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                               disabledTextColor: Colors.grey,
                             ),
@@ -457,55 +463,55 @@ class _SettingsPageState extends State<SettingsPage> {
                             Button(
                               onPressed: () {
                                 setState(() {
-                                  settings!.itemType = ItemType.LIST;
+                                  settings.itemType = ItemType.LIST;
 
-                                  settings!.save();
+                                  settings.save();
                                 });
                               },
                               icon: Icons.list,
                               fontSize: 30,
                               padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              backgroundGradient: settings!.itemType == ItemType.LIST ? focused : unFocused,
-                              borderColor: settings!.itemType != ItemType.LIST ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
-                              textColor: settings!.itemType != ItemType.LIST ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
+                              backgroundGradient: settings.itemType == ItemType.LIST ? focused : unFocused,
+                              borderColor: settings.itemType != ItemType.LIST ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
+                              textColor: settings.itemType != ItemType.LIST ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
                               duration: 200,
                             ),
                             Button(
                               onPressed: () {
                                 setState(() {
-                                  settings!.oldSchool = false;
-                                  settings!.itemType = ItemType.WIDGET;
+                                  settings.oldSchool = false;
+                                  settings.itemType = ItemType.WIDGET;
 
-                                  settings!.save();
+                                  settings.save();
                                 });
                               },
                               icon: Icons.view_comfy_outlined,
                               fontSize: 30,
                               padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              backgroundGradient: settings!.itemType == ItemType.WIDGET ? focused : unFocused,
-                              borderColor: settings!.itemType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
-                              textColor: settings!.itemType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
+                              backgroundGradient: settings.itemType == ItemType.WIDGET ? focused : unFocused,
+                              borderColor: settings.itemType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
+                              textColor: settings.itemType != ItemType.WIDGET ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
                               duration: 200,
-                              disabled: settings!.oldSchool,
+                              disabled: settings.oldSchool,
                               disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                               disabledTextColor: Colors.grey,
                             ),
                             Button(
                               onPressed: () {
                                 setState(() {
-                                  settings!.oldSchool = false;
-                                  settings!.itemType = ItemType.LARGE;
-                                  settings!.save();
+                                  settings.oldSchool = false;
+                                  settings.itemType = ItemType.LARGE;
+                                  settings.save();
                                 });
                               },
                               icon: Icons.view_day_outlined,
                               fontSize: 30,
                               padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              backgroundGradient: settings!.itemType == ItemType.LARGE ? focused : unFocused,
-                              borderColor: settings!.itemType != ItemType.LARGE ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
-                              textColor: settings!.itemType != ItemType.LARGE ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
+                              backgroundGradient: settings.itemType == ItemType.LARGE ? focused : unFocused,
+                              borderColor: settings.itemType != ItemType.LARGE ? Colors.white : const Color.fromARGB(130, 143, 102, 224),
+                              textColor: settings.itemType != ItemType.LARGE ? Colors.white : const Color.fromARGB(255, 143, 102, 224),
                               duration: 200,
-                              disabled: settings!.oldSchool,
+                              disabled: settings.oldSchool,
                               disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                               disabledTextColor: Colors.grey,
                             ),
@@ -547,15 +553,15 @@ class _SettingsPageState extends State<SettingsPage> {
                                   Button(
                                     onPressed: () {
                                       setState(() {
-                                        settings!.orderBy = SortBy.NAME;
+                                        settings.orderBy = SortBy.NAME;
                                       });
                                     },
                                     icon: Icons.sort_by_alpha_rounded,
                                     fontSize: 30,
                                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    backgroundGradient: settings!.orderBy == SortBy.NAME ? focused : unFocused,
-                                    borderColor: settings!.orderBy != SortBy.NAME ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
-                                    textColor: settings!.orderBy != SortBy.NAME ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
+                                    backgroundGradient: settings.orderBy == SortBy.NAME ? focused : unFocused,
+                                    borderColor: settings.orderBy != SortBy.NAME ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
+                                    textColor: settings.orderBy != SortBy.NAME ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
                                     duration: 200,
                                     disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                                     disabledTextColor: Colors.grey,
@@ -563,16 +569,16 @@ class _SettingsPageState extends State<SettingsPage> {
                                   Button(
                                     onPressed: () {
                                       setState(() {
-                                        settings!.orderBy = SortBy.ID;
-                                        settings!.save();
+                                        settings.orderBy = SortBy.ID;
+                                        settings.save();
                                       });
                                     },
                                     icon: Icons.update,
                                     fontSize: 30,
                                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    backgroundGradient: settings!.orderBy == SortBy.ID ? focused : unFocused,
-                                    borderColor: settings!.orderBy != SortBy.ID ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
-                                    textColor: settings!.orderBy != SortBy.ID ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
+                                    backgroundGradient: settings.orderBy == SortBy.ID ? focused : unFocused,
+                                    borderColor: settings.orderBy != SortBy.ID ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
+                                    textColor: settings.orderBy != SortBy.ID ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
                                     duration: 200,
                                     disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                                     disabledTextColor: Colors.grey,
@@ -580,16 +586,16 @@ class _SettingsPageState extends State<SettingsPage> {
                                   Button(
                                     onPressed: () {
                                       setState(() {
-                                        settings!.orderBy = SortBy.EDITED;
-                                        settings!.save();
+                                        settings.orderBy = SortBy.EDITED;
+                                        settings.save();
                                       });
                                     },
                                     icon: Icons.edit_square,
                                     fontSize: 30,
                                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    backgroundGradient: settings!.orderBy == SortBy.EDITED ? focused : unFocused,
-                                    borderColor: settings!.orderBy != SortBy.EDITED ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
-                                    textColor: settings!.orderBy != SortBy.EDITED ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
+                                    backgroundGradient: settings.orderBy == SortBy.EDITED ? focused : unFocused,
+                                    borderColor: settings.orderBy != SortBy.EDITED ? Colors.white : const Color.fromARGB(130, 102, 224, 169),
+                                    textColor: settings.orderBy != SortBy.EDITED ? Colors.white : const Color.fromARGB(200, 102, 224, 169),
                                     duration: 200,
                                     disabledBorderColor: const Color.fromARGB(255, 107, 107, 107),
                                     disabledTextColor: Colors.grey,
@@ -605,15 +611,15 @@ class _SettingsPageState extends State<SettingsPage> {
                                     Button(
                                       onPressed: () {
                                         setState(() {
-                                          settings!.order = settings!.order == Order.ASC ? Order.DESC : Order.ASC;
-                                          settings!.save();
+                                          settings.order = settings.order == Order.ASC ? Order.DESC : Order.ASC;
+                                          settings.save();
                                         });
                                       },
                                       width: 82.5,
-                                      icon: settings!.order != Order.ASC ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                                      icon: settings.order != Order.ASC ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                                       fontSize: 30,
                                       padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                      backgroundGradient: settings!.order != Order.ASC
+                                      backgroundGradient: settings.order != Order.ASC
                                           ? const LinearGradient(
                                               colors: [
                                                 Color.fromARGB(73, 102, 224, 169),
@@ -631,9 +637,9 @@ class _SettingsPageState extends State<SettingsPage> {
                                               begin: Alignment.bottomCenter,
                                             ),
                                       borderColor:
-                                          settings!.order == Order.ASC ? const Color.fromARGB(73, 41, 140, 245) : const Color.fromARGB(73, 102, 224, 169),
+                                          settings.order == Order.ASC ? const Color.fromARGB(73, 41, 140, 245) : const Color.fromARGB(73, 102, 224, 169),
                                       textColor:
-                                          settings!.order != Order.ASC ? const Color.fromARGB(200, 41, 140, 245) : const Color.fromARGB(200, 102, 224, 169),
+                                          settings.order != Order.ASC ? const Color.fromARGB(200, 41, 140, 245) : const Color.fromARGB(200, 102, 224, 169),
                                       duration: 200,
                                     ),
                                 ],
@@ -644,15 +650,15 @@ class _SettingsPageState extends State<SettingsPage> {
                                   child: Button(
                                     onPressed: () {
                                       setState(() {
-                                        settings!.order = settings!.order == Order.ASC ? Order.DESC : Order.ASC;
-                                        settings!.save();
+                                        settings.order = settings.order == Order.ASC ? Order.DESC : Order.ASC;
+                                        settings.save();
                                       });
                                     },
                                     width: 82.5,
-                                    icon: settings!.order != Order.ASC ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                                    icon: settings.order != Order.ASC ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                                     fontSize: 30,
                                     padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    backgroundGradient: settings!.order != Order.ASC
+                                    backgroundGradient: settings.order != Order.ASC
                                         ? const LinearGradient(
                                             colors: [
                                               Color.fromARGB(73, 102, 224, 169),
@@ -670,9 +676,9 @@ class _SettingsPageState extends State<SettingsPage> {
                                             begin: Alignment.bottomCenter,
                                           ),
                                     borderColor:
-                                        settings!.order == Order.ASC ? const Color.fromARGB(73, 41, 140, 245) : const Color.fromARGB(73, 102, 224, 169),
+                                        settings.order == Order.ASC ? const Color.fromARGB(73, 41, 140, 245) : const Color.fromARGB(73, 102, 224, 169),
                                     textColor:
-                                        settings!.order != Order.ASC ? const Color.fromARGB(200, 41, 140, 245) : const Color.fromARGB(200, 102, 224, 169),
+                                        settings.order != Order.ASC ? const Color.fromARGB(200, 41, 140, 245) : const Color.fromARGB(200, 102, 224, 169),
                                     duration: 200,
                                   ),
                                 ),

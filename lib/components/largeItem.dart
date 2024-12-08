@@ -45,8 +45,8 @@ class LargeItemState extends State<LargeItem> {
 
   @override
   void dispose() {
-    if(widget.settings.selectionON && widget.settings.largeItemKeys.contains(widget.key as GlobalKey)) {
-      widget.settings.largeItemKeys.remove(widget.key as GlobalKey);
+    if(widget.settings.selectionON && widget.settings.itemKeys.contains(widget.key as GlobalKey)) {
+      widget.settings.itemKeys.remove(widget.key as GlobalKey);
     }
     super.dispose();
   }
@@ -60,8 +60,8 @@ class LargeItemState extends State<LargeItem> {
 
   @override
   Widget build(BuildContext context) {
-    if(widget.settings.selectionON && !widget.settings.largeItemKeys.contains(widget.key as GlobalKey)) {
-      widget.settings.largeItemKeys.add(widget.key as GlobalKey);
+    if(widget.settings.selectionON && !widget.settings.itemKeys.contains(widget.key as GlobalKey)) {
+      widget.settings.itemKeys.add(widget.key as GlobalKey);
     }
     return Stack(
       children: [

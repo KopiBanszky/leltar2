@@ -24,7 +24,7 @@ class SettingsDialog {
   GlobalKey<SearchbarState> searchbarKey = GlobalKey<SearchbarState>();
 
   List<int> selected = [];
-  List<GlobalKey> largeItemKeys = [];
+  List<GlobalKey> itemKeys = [];
 
   SettingsDialog({
     required this.itemType,
@@ -171,7 +171,6 @@ class SettingsDialog {
   }
 
   void setSearchbarKey(GlobalKey<SearchbarState> key) {
-    print("settings new key: $key");
     searchbarKey = key;
   }
 

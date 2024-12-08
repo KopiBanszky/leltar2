@@ -24,6 +24,10 @@ class Category {
   late IconData icon;
   bool selected = false;
   final GlobalKey<LargeItemState> largeCategoryKey = GlobalKey<LargeItemState>();
+  final GlobalKey<WidgetItemState> widgetCategoryKey = GlobalKey<WidgetItemState>();
+  final GlobalKey<ListItemState> listCategoryKey = GlobalKey<ListItemState>();
+  
+
 
   Category({
     required this.id,
@@ -59,14 +63,9 @@ class Category {
   }) {
     onPressed ??= () async {
       GlobalKey<SearchbarState> searchBarKey = settings.searchbarKey;
-      print("oldKey: ${searchBarKey.toString()}");
       await Navigator.pushNamed(context, "/",
           arguments: {"route": "${path == "default" ? "" : path}${id}_", "settings": settings, "name": name, "id": id, "openNew": openNew});
       settings.searchbarKey = searchBarKey;
-      print("newKey: ${settings.searchbarKey.toString()}");
-      if(settings.searchbarKey.currentState != null)
-        print("keyState: ${settings.searchbarKey.currentState!.title}");
-      else print("keyState: default");
     };
     if (type == ItemType.LARGE) {
       return LargeItem(
@@ -92,18 +91,49 @@ class Category {
       );
     } else if (type == ItemType.LIST) {
       return ListItem(
+        key: listCategoryKey,
+        id: id,
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
         icon: icon,
+        settings: settings,
+        onHold: onHold,
+        afterHoldPress: () {
+          callback() {
+            if (settings.isSelected(id)) {
+              settings.deselect(id);
+            } else {
+              settings.select(id);
+            }
+            switchSelection(settings.isSelected(id), callback);
+          }
+          callback();
+        },
         isCategory: true,
       );
     } else if (type == ItemType.WIDGET) {
       return WidgetItem(
+        key: widgetCategoryKey,
+        id: id,
         name: name,
         description: description,
         onPressed: onPressed as dynamic Function(),
         icon: icon,
+        settings: settings,
+        onHold: onHold,
+        afterHoldPress: () {
+          callback() {
+            if (settings.isSelected(id)) {
+              settings.deselect(id);
+            } else {
+              settings.select(id);
+            }
+            switchSelection(settings.isSelected(id), callback);
+          }
+          callback();
+        },
+
       );
     } else {
       return const SizedBox();
@@ -113,7 +143,15 @@ class Category {
   //does not setState
   void switchSelection(bool isSelected, VoidCallback callback) {
     selected = isSelected;
-    largeCategoryKey.currentState!.setStateFromeOutside(isSelected, callback);
+    try{
+      largeCategoryKey.currentState!.setStateFromeOutside(isSelected, callback);
+    } catch(e) {}
+    try{
+      widgetCategoryKey.currentState!.setStateFromeOutside(isSelected, callback);
+    } catch(e) {}
+    try{
+      listCategoryKey.currentState!.setStateFromeOutside(isSelected, callback);
+    } catch(e) {}
   }
 }
 
@@ -185,12 +223,30 @@ class Categories {
       //   element.switchSelection(false, () {});
       // }
 
-      for (GlobalKey element in settings.largeItemKeys) {
-        GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
-        try {
-          key.currentState!.setStateFromeOutside(false, () {});
-        } catch (e) {
-          print(e);
+      for (GlobalKey element in settings.itemKeys) {
+        if(element is GlobalKey<WidgetItemState> ) {
+          GlobalKey<WidgetItemState> key = element as GlobalKey<WidgetItemState>;
+          try {
+            key.currentState!.setStateFromeOutside(false, () {});
+          } catch (e) {
+            print(e);
+          }
+        }
+        if(element is GlobalKey<LargeItemState>) {
+          GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
+          try {
+            key.currentState!.setStateFromeOutside(false, () {});
+          } catch (e) {
+            print(e);
+          }
+        }
+        if(element is GlobalKey<ListItemState>) {
+          GlobalKey<ListItemState> key = element as GlobalKey<ListItemState>;
+          try {
+            key.currentState!.setStateFromeOutside(false, () {});
+          } catch (e) {
+            print(e);
+          }
         }
       }
 

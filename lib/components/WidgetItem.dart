@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:leltar_2/components/settingsDialog.dart';
 
-class WidgetItem extends StatelessWidget {
+class WidgetItem extends StatefulWidget {
   const WidgetItem({
     super.key,
+    required this.id,
     required this.name,
     required this.description,
     required this.onPressed,
@@ -10,8 +12,11 @@ class WidgetItem extends StatelessWidget {
     this.image,
     this.icon = Icons.open_in_new_outlined,
     this.problem = false,
+    this.afterHoldPress,
+    required this.settings
   });
 
+  final int id;
   final String name;
   final String description;
   final Image? image;
@@ -19,9 +24,44 @@ class WidgetItem extends StatelessWidget {
   final Function() onPressed;
   final Function()? onHold;
   final bool problem;
+  final VoidCallback? afterHoldPress;
+  final SettingsDialog settings;
+
+  @override
+  WidgetItemState createState() => WidgetItemState();
+}
+
+class WidgetItemState extends State<WidgetItem> {
+  bool selected = false;
+  VoidCallback pressOnHold = () {};
+  
+  void setStateFromeOutside(bool isSelected, VoidCallback pressOnHoldNew) {
+    selected = isSelected;
+    setState(() {
+      pressOnHold = pressOnHoldNew;
+    });
+  }
+
+  @override
+  void dispose() {
+    if(widget.settings.selectionON && widget.settings.itemKeys.contains(widget.key as GlobalKey)) {
+      widget.settings.itemKeys.remove(widget.key as GlobalKey);
+    }
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    selected = widget.settings.isSelected(widget.id);
+    pressOnHold = widget.afterHoldPress ?? () {};
+  }
 
   @override
   Widget build(BuildContext context) {
+    if(widget.settings.selectionON && !widget.settings.itemKeys.contains(widget.key as GlobalKey)) {
+      widget.settings.itemKeys.add(widget.key as GlobalKey);
+    }
     return ElevatedButton(
       style: ButtonStyle(
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -35,8 +75,12 @@ class WidgetItem extends StatelessWidget {
         // elevation: MaterialStateProperty.all<double>(0),
         padding: WidgetStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.all(0)),
       ),
-      onPressed: onPressed,
-      onLongPress: onHold,
+      onPressed: widget.settings.selectionON ? pressOnHold : widget.onPressed,
+      onLongPress:  () {
+            setState(() {
+              widget.onHold!();
+            });
+          },
       child: Padding(
         padding: const EdgeInsets.all(0),
         child: Container(
@@ -94,9 +138,9 @@ class WidgetItem extends StatelessWidget {
                               padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                               child: Padding(
                                 padding: const EdgeInsets.all(0.0),
-                                child: image == null
+                                child: widget.image == null
                                     ? Icon(
-                                        icon,
+                                        widget.icon,
                                         color: const Color(0xff95A1AC),
                                         size: 140,
                                       )
@@ -104,7 +148,7 @@ class WidgetItem extends StatelessWidget {
                                         width: MediaQuery.sizeOf(context).width,
                                         decoration: BoxDecoration(
                                           image: DecorationImage(
-                                            image: image!.image,
+                                            image: widget.image!.image,
                                             fit: BoxFit.cover,
                                           ),
                                           borderRadius: const BorderRadius.only(
@@ -167,7 +211,7 @@ class WidgetItem extends StatelessWidget {
                               child: Padding(
                                 padding: const EdgeInsetsDirectional.fromSTEB(4, 5, 0, 0),
                                 child: Text(
-                                  name,
+                                  widget.name,
                                   textAlign: TextAlign.start,
                                   maxLines: 1,
                                   style: const TextStyle(
@@ -200,7 +244,7 @@ class WidgetItem extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(13, 0, 2, 0),
                             child: Text(
-                              description,
+                              widget.description,
                               textAlign: TextAlign.start,
                               maxLines: 2,
                               style: const TextStyle(
@@ -221,7 +265,7 @@ class WidgetItem extends StatelessWidget {
                   ),
                 ),
               ),
-              if (problem)
+              if (widget.problem)
                 const Positioned(
                   right: 0,
                   top: 0,
@@ -232,6 +276,17 @@ class WidgetItem extends StatelessWidget {
                       color: Colors.red,
                       size: 25,
                     ),
+                  ),
+                ),
+                if(widget.settings.selectionON) Positioned(
+                  top: 0,
+                  left: 0,
+                  child: IconButton(
+                    icon: Icon(
+                      selected ? Icons.check_circle : Icons.circle_outlined,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {},
                   ),
                 ),
             ],

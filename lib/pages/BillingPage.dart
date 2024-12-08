@@ -51,12 +51,40 @@ class _BillingPageState extends State<BillingPage> {
   File? image;
   XFile? imageX;
 
+  List<String> projectNames = [
+    "Csotthon",
+    "SarokPont",
+    "Tábori felszerelés fejlesztés",
+    "Vezetőségi programok",
+    "Gyerekprogramok",
+    "Könyvelő",
+    "Táborhelynézés",
+    "Tagdíj befizetés",
+    "Adomány",
+    "Egyéb bevételek",
+    "Nyitó",
+    "Bank"
+  ];
+  List<String> subprojectNames = [
+    "gyógyszer",
+    "póló",
+    "élelmiszer",
+    "előzetes élelmiszer",
+    "előtábor kaja",
+    "pb gáz",
+    "program kellékek",
+    "szemét",
+    "portya költekezések",
+    "benzin",
+    "teherautó",
+    "autó+kau",
+    "utazás"];
+
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController projectNameController = TextEditingController();
   TextEditingController subprojectNameController = TextEditingController();
   TextEditingController amountController = TextEditingController();
-  TextEditingController objectController = TextEditingController();
   TextEditingController whoController = TextEditingController();
   TextEditingController commentController = TextEditingController();
   TextEditingController dateController = TextEditingController();
@@ -67,6 +95,7 @@ class _BillingPageState extends State<BillingPage> {
       CustomSnackbar.show(context, "Hibás adatok!");
       return;
     }
+    
     if (imageX != null) {
       if (settings!.saveImages) {
         final directory = await getApplicationDocumentsDirectory();
@@ -74,7 +103,7 @@ class _BillingPageState extends State<BillingPage> {
         if (await File(path).exists() == false) await Directory(path).create();
         image!.copy("$path\\${DateTime.now().millisecondsSinceEpoch}.jpg");
       }
-      await post_image("uploadBill", kIsWeb ? null : image, kIsWeb ? imageX : null, kIsWeb, {
+      post_image("uploadBill", kIsWeb ? null : image, kIsWeb ? imageX : null, kIsWeb, {
         "income": (income ? 1 : 0).toString(),
         "white": (whiteMoney ? 1 : 0).toString(),
         "cash": (kp ? 1 : 0).toString(),
@@ -82,13 +111,12 @@ class _BillingPageState extends State<BillingPage> {
         "subproject": subprojectNameController.text,
         "date": dateController.text,
         "amount": amountController.text,
-        "object": objectController.text,
         "who": whoController.text,
         "comment": commentController.text,
         "device": "mobile",
       });
     } else {
-      await http_post("uploadBill", {
+      http_post("uploadBill", {
         "data": {
           "income": income,
           "white": whiteMoney,
@@ -97,33 +125,32 @@ class _BillingPageState extends State<BillingPage> {
           "subproject": subprojectNameController.text,
           "date": dateController.text,
           "amount": amountController.text,
-          "object": objectController.text,
           "who": whoController.text,
           "comment": commentController.text,
         },
         "device": "unknown",
       });
     }
+    
+    projectNameController.clear();
+    subprojectNameController.clear();
+    dateController.clear();
+    amountController.clear();
+    whoController.clear();
+    commentController.clear();
     setState(() {
       if (!kIsWeb && (image != null)) image!.delete();
       image = null;
       imageX = null;
 
-      projectNameController.clear();
-      subprojectNameController.clear();
-      dateController.clear();
-      amountController.clear();
-      objectController.clear();
-      whoController.clear();
-      commentController.clear();
-
-      projectNameController.text = "";
-      subprojectNameController.text = "";
-      dateController.text = "";
-      amountController.text = "";
-      objectController.text = "";
-      whoController.text = "";
-      commentController.text = "";
+      // projectNameController.clear();
+      // subprojectNameController.clear();
+      // dateController.clear();
+      // amountController.clear();
+      // whoController.clear();
+      // commentController.clear();
+      whiteMoney = false;
+      kp = true;
       CustomSnackbar.show(context, "Sikeresen mentve!");
     });
   }
@@ -176,6 +203,29 @@ class _BillingPageState extends State<BillingPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchSuggestions();
+  }
+
+  Future<void> fetchSuggestions() async {
+    RquestResult value = await http_get("getBills", {"onlyProjects": "true", "onlySubprojects": "true"});
+    if (value.ok) {
+      List<dynamic> data = jsonDecode(jsonDecode(value.data))["response"];
+      List<String> projectNames = [];
+      for (int i = 0; i < data.length; i++) {
+        if (!projectNames.contains(data[i]["project"].toString().trim().toLowerCase())) {
+          projectNames.add(data[i]["project"].toString().trim().toLowerCase());
+        }
+        if (!subprojectNames.contains(data[i]["subproject"].toString().trim().toLowerCase()) &&
+            (data[i]["subproject"].toString().trim().toLowerCase() != "")) {
+          subprojectNames.add(data[i]["subproject"].toString().trim().toLowerCase());
+        }
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(
@@ -187,38 +237,6 @@ class _BillingPageState extends State<BillingPage> {
         color: Colors.transparent,
         height: MediaQuery.of(context).size.height * .9,
         child: NotificationListener<ScrollNotification>(
-          onNotification: (scrollNotification) {
-            if (scrollNotification is ScrollUpdateNotification) {
-              if (appBar.setScrollStatus(scrollNotification.metrics.pixels)) {
-                setState(() {});
-              }
-              if (scrollNotification.metrics.pixels <= 250) {
-                if (_height == 250.0) {
-                  setState(() {
-                    _scrollController.jumpTo(0.0);
-                    _height = INITIALHEIGHT;
-                  });
-                }
-                return true;
-              }
-              if (scrollNotification.scrollDelta! < 0.0) {
-                if (_height <= 0.0) {
-                  setState(() {
-                    _height = INITIALHEIGHT;
-                  });
-                }
-              } else if (_height == INITIALHEIGHT) {
-                setState(() {
-                  _height = 0.0;
-                });
-              } else if (_height == 250.0) {
-                setState(() {
-                  _height = INITIALHEIGHT;
-                });
-              }
-            }
-            return true;
-          },
           child: SingleChildScrollView(
             // physics: const BouncingScrollPhysics(),
             controller: _scrollController,
@@ -240,30 +258,42 @@ class _BillingPageState extends State<BillingPage> {
                             // height: 50,
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-                              child: TextInput(
-                                controller: projectNameController,
+                              child: DropdownButtonFormField<String>(
+                                value: projectNameController.text.isEmpty ? null : projectNameController.text,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return "Kötelező mező!";
                                   }
                                   return null;
                                 },
-                                labelText: "Projekt neve",
-                                isSuggestionsOn: true,
-                                suggestions: () async {
-                                  RquestResult value = await http_get("getBills");
-                                  if (value.ok) {
-                                    List<dynamic> data = jsonDecode(jsonDecode(value.data))["response"];
-                                    List<String> projectNames = [];
-                                    for (int i = 0; i < data.length; i++) {
-                                      if (!projectNames.contains(data[i]["project"].toString().trim().toLowerCase())) {
-                                        projectNames.add(data[i]["project"].toString().trim().toLowerCase());
-                                      }
-                                    }
-                                    return projectNames;
-                                  }
-                                  return [];
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    projectNameController.text = newValue!;
+                                  });
                                 },
+
+                                items: projectNames.map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(
+                                      value,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                                dropdownColor: Colors.black,
+                                decoration: const InputDecoration(
+                                  hintText: "Projekt neve",
+                                  hintStyle: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -280,42 +310,7 @@ class _BillingPageState extends State<BillingPage> {
                                 fontSize: 13,
                                 fontWeight: FontWeight.w300,
                                 isSuggestionsOn: true,
-                                suggestions: () async {
-                                  RquestResult value = await http_get("getBills");
-                                  if (value.ok) {
-                                    List<dynamic> data = jsonDecode(jsonDecode(value.data))["response"];
-                                    List<String> subprojectNames = [];
-                                    for (int i = 0; i < data.length; i++) {
-                                      if (!subprojectNames.contains(data[i]["subproject"].toString().trim().toLowerCase()) &&
-                                          (data[i]["subproject"].toString().trim().toLowerCase() != "")) {
-                                        subprojectNames.add(data[i]["subproject"].toString().trim().toLowerCase());
-                                      }
-                                    }
-                                    List<String> defaultProjectNames = [
-                                      "gyógyszer",
-                                      "póló",
-                                      "élelmiszer",
-                                      "előzetes élelmiszer",
-                                      "előtábor kaja",
-                                      "pb gáz",
-                                      "program kellékek",
-                                      "szemét",
-                                      "portya költekezések",
-                                      "benzin",
-                                      "teherautó",
-                                      "autó+kau",
-                                      "táborhelynézés",
-                                      "utazás"
-                                    ];
-                                    for (int i = 0; i < defaultProjectNames.length; i++) {
-                                      if (!subprojectNames.contains(defaultProjectNames[i])) {
-                                        subprojectNames.add(defaultProjectNames[i]);
-                                      }
-                                    }
-                                    return subprojectNames;
-                                  }
-                                  return [];
-                                },
+                                suggestions: () async => subprojectNames,
                               ),
                             ),
                           ),
@@ -523,30 +518,12 @@ class _BillingPageState extends State<BillingPage> {
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
                               child: TextInput(
-                                controller: objectController,
-                                prefixIcon: const Icon(
-                                  Icons.shopping_bag_outlined,
-                                  size: 20,
-                                ),
-                                labelText: "Tárgy",
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w300,
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * .75,
-                            // height: 50,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
-                              child: TextInput(
                                 controller: whoController,
                                 prefixIcon: const Icon(
                                   Icons.person,
                                   size: 20,
                                 ),
-                                labelText: "Ki",
+                                labelText: "Ki/Hol",
                                 color: Colors.white,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w300,

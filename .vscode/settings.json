@@ -1,5 +1,8 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
     "cmake.sourceDirectory": "C:/Kopi/programok/_cserkeszet/leltar2/linux",
-    "java.compile.nullAnalysis.mode": "disabled"
+    "java.compile.nullAnalysis.mode": "disabled",
+    "editor.tabCompletion": "on",
+    "editor.tabFocusMode": false,
+    "editor.stickyTabStops": false
 }

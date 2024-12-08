@@ -29,10 +29,10 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   dynamic arguments;
 
   late ResponsiveAppBar appBar = ResponsiveAppBar();
@@ -60,6 +60,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Uri windowsUrl = Uri.parse("https://drive.google.com");
 
   int pageIndex = 0;
+  
 
   void loadCategories() {
     if (mounted) {
