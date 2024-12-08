@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   late SettingsDialog? settings = null;
 
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   GlobalKey<SearchbarState> searchbarKey = GlobalKey<SearchbarState>();
   late Searchbar? searchbar = null;
@@ -99,47 +99,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     arguments = ModalRoute.of(context)!.settings.arguments;
-    isLoggedIn(id: "none", hash: "none").then(
-      (value) => {
-        if (!value && mounted)
-          {
-            Navigator.pushReplacementNamed(context, "/login"),
-          }
-      },
-    );
-
-    settings ??= arguments?["settings"];
-    if (settings == null) {
-      settings = SettingsDialog(
-        saveImages: true,
-        itemType: ItemType.LARGE,
-        order: Order.ASC,
-        orderBy: SortBy.ID,
-        categoryType: ItemType.LARGE,
-        oldSchool: false,
-        indexImages: true,
-        columns: 1,
-      );
-      settings!.setSearchbarKey(searchbarKey);
-      settings!.load().then((value) => setState(() {
-          settings = value;
-        })
-      );
-
-      settings!.setHomeSetState(setState);
+    bool userOk = await isLoggedIn(id: "none", hash: "none");
+    if (!userOk && mounted){
+      Navigator.pushReplacementNamed(context, "/login");
     }
 
+    settings ??= arguments?["settings"];
+    //if(settings!.searchbarKey == null) settings!.setSearchbarKey(searchbarKey);
+    settings!.load().then((value) {
+      if(mounted){ setState(() {
+          settings = value;
+        });
+      }
+      }
+    );
+
+    settings!.setHomeSetState(setState);
     searchbar ??= Searchbar.empty(key: searchbarKey, settings: settings!, onPressed: () {
           Navigator.pushNamed(context, "/searchHelper", arguments: {"path": arguments?["route"] ?? "default", "settings": settings});
         });
+
     
     searchbar!.setTitle(arguments?["name"] ?? "439. Leltár");
+    if(mounted){
     searchbar!.setDrawerIcon(Navigator.canPop(context) ? Icons.arrow_back : null);
     searchbar!.setDrawerFunction(Navigator.canPop(context)
         ? () {
             Navigator.pop(context);
           }
         : null);
+    }
     searchbar!.setMoreFunction(() {
       _height = INITIALHEIGHT;
       Order currentOrder = settings!.order;
@@ -207,6 +196,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
     categories = Categories();
     items = Items();
+    
+    settings = SettingsDialog(
+      saveImages: true,
+      itemType: ItemType.LARGE,
+      order: Order.ASC,
+      orderBy: SortBy.ID,
+      categoryType: ItemType.LARGE,
+      oldSchool: false,
+      indexImages: true,
+      columns: 1,
+    );
   }
 
   @override
@@ -390,7 +390,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Button(
-                        onPressed: () {}, //TODO: page index
+                        onPressed: () {
+                          Navigator.pushNamed(context, "/newItem", arguments: {"type": pageIndex == 0 ? "category": "item"},);
+                        }, //TODO: page index
                         text: "Új",
                         icon: pageIndex == 0 ? Icons.create_new_folder_outlined : Icons.add_circle_outline,
                         fontSize: 16,
@@ -448,7 +450,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     items.items.removeWhere((e) => settings!.selected.contains(e.id));
                                     categories.items.removeWhere((e) => settings!.selected.contains(e.id));
                                     settings!.selected.clear();
-                                    for (GlobalKey element in settings!.largeItemKeys) {
+                                    for (GlobalKey element in settings!.itemKeys) {
                                       GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
                                       try {
                                         key.currentState!.setStateFromeOutside(false, () {});
@@ -468,7 +470,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   
                                   settings!.setSelection(false);
                                   settings!.selected.clear();
-                                  for (GlobalKey element in settings!.largeItemKeys) {
+                                  for (GlobalKey element in settings!.itemKeys) {
                                     GlobalKey<LargeItemState> key = element as GlobalKey<LargeItemState>;
                                     try {
                                       key.currentState!.setStateFromeOutside(false, () {});
