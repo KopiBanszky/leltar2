@@ -73,6 +73,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         paddingBottom: 5,
         paddingTop: 5,
         openNew: arguments?["openNew"] ?? false,
+        f_items: items,
       );
       if (categories.items.isEmpty) pageIndex = 1;
       // _height = INITIALHEIGHT;
@@ -90,6 +91,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         width: MediaQuery.sizeOf(context).width * 0.9,
         paddingBottom: 5,
         paddingTop: 5,
+        categories: categories
       );
       // _height = INITIALHEIGHT;
       if (mounted) setState(() {});

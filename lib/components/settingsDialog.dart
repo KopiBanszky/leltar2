@@ -75,7 +75,16 @@ class SettingsDialog {
     if (data == null) {
       return this;
     }
-    return SettingsDialog.fromJson(data);
+    SettingsDialog newSettings = SettingsDialog.fromJson(data);
+    itemType = newSettings.itemType;
+    categoryType = newSettings.categoryType;
+    order = newSettings.order;
+    orderBy = newSettings.orderBy;
+    columns = newSettings.columns;
+    oldSchool = newSettings.oldSchool;
+    indexImages = newSettings.indexImages;
+    saveImages = newSettings.saveImages;
+    return this;
   }
 
   late ItemType newItemType = itemType;

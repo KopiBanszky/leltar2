@@ -61,8 +61,10 @@ class _SettingsPageState extends State<SettingsPage> {
     print("didChangeDependencies");
     arguments = ModalRoute.of(context)!.settings.arguments;
 
-    directory = await getApplicationDocumentsDirectory();
-    path = "${directory!.path}\\leltar\\";
+    if(!kIsWeb){
+      directory = await getApplicationDocumentsDirectory();
+      path = "${directory!.path}\\leltar\\";
+      }
 
     if(!_loaded) {
       settings = arguments?["settings"] ??

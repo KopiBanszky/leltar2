@@ -62,6 +62,9 @@ class ListItemState extends State<ListItem> {
 
   @override
   Widget build(BuildContext context) {
+    if(widget.settings.selectionON && !widget.settings.itemKeys.contains(widget.key as GlobalKey)) {
+      widget.settings.itemKeys.add(widget.key as GlobalKey);
+    }
     return ElevatedButton(
       style: ButtonStyle(
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(

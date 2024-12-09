@@ -9,6 +9,7 @@ import 'package:leltar_2/components/WidgetItem.dart';
 import 'package:leltar_2/components/largeItem.dart';
 import 'package:leltar_2/components/searchbar.dart';
 import 'package:leltar_2/components/settingsDialog.dart';
+import 'package:leltar_2/functions/apiManager/items.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/functions/http/http.dart';
 import 'package:leltar_2/functions/itembuilder.dart';
@@ -209,6 +210,7 @@ class ToStr {
 
 class Categories {
   late List<Category> items = [];
+  late Items f_items;
   int loadedIndexes = 0;
 
   void onHold(int id, SettingsDialog settings) {
@@ -255,6 +257,17 @@ class Categories {
       
     });
     for (var element in items) {
+      callback() {
+        if (settings.isSelected(element.id)) {
+          settings.deselect(element.id);
+        } else {
+          settings.select(element.id);
+        }
+        element.switchSelection(settings.isSelected(element.id), callback);
+      }
+      element.switchSelection(settings.isSelected(element.id), callback);
+    }
+    for (var element in f_items.items) {
       callback() {
         if (settings.isSelected(element.id)) {
           settings.deselect(element.id);
@@ -428,13 +441,17 @@ class Categories {
   Widget display(
     BuildContext context, 
     SettingsDialog settings, {
-    ItemType type = ItemType.WIDGET,
-    int column = 1,
-    double width = 300,
-    double paddingBottom = 10,
-    double paddingTop = 10,
-    bool openNew = false,
+      ItemType type = ItemType.WIDGET,
+      int column = 1,
+      double width = 300,
+      double paddingBottom = 10,
+      double paddingTop = 10,
+      bool openNew = false,
+      Items? f_items,
   }) {
+    if (f_items != null) {
+      this.f_items = f_items;
+    }
     List<Widget> _elements = [];
     for (var item in items) {
       _elements.add(item.display(

@@ -198,6 +198,7 @@ class Item {
         id: id,
         name: name,
         description: description,
+        onHold: onHold,
         onPressed: onPressed as dynamic Function(),
         isCategory: false,
         image: index[type.toString().split(".")[1].toLowerCase()] == "" || index[type.toString().split(".")[1].toLowerCase()] == null
@@ -292,6 +293,7 @@ class Item {
 
 class Items {
   late List<Item> items = [];
+  late Categories categories;
   int loadedIndexes = 0;
 
   void onHold(int id, SettingsDialog settings) {
@@ -336,6 +338,17 @@ class Items {
       
     });
     for (var element in items) {
+      callback() {
+        if (settings.isSelected(element.id)) {
+          settings.deselect(element.id);
+        } else {
+          settings.select(element.id);
+        }
+        element.switchSelection(settings.isSelected(element.id), callback);
+      }
+      element.switchSelection(settings.isSelected(element.id), callback);
+    }
+    for (var element in categories.items) {
       callback() {
         if (settings.isSelected(element.id)) {
           settings.deselect(element.id);
@@ -534,8 +547,11 @@ class Items {
     double width = 300,
     double paddingBottom = 10,
     double paddingTop = 10,
-    
+    Categories? categories,
   }) {
+    if(categories != null) {
+      this.categories = categories;
+    }
     List<Widget> elements = [];
     for (var item in items) {
       elements.add(item.display(context, settings, type: type, onHold: () => onHold(item.id, settings),));
