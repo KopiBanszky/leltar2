@@ -60,6 +60,8 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Uri windowsUrl = Uri.parse("https://drive.google.com");
 
   int pageIndex = 0;
+
+  bool settingsLoaded = false;
   
 
   void loadCategories() {
@@ -102,20 +104,26 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     arguments = ModalRoute.of(context)!.settings.arguments;
-    bool userOk = await isLoggedIn(id: "none", hash: "none");
+    bool userOk = await Account.isLoggedIn(id: "none", hash: "none");
     if (!userOk && mounted){
       Navigator.pushReplacementNamed(context, "/login");
     }
 
-    settings ??= arguments?["settings"];
+    if(arguments?["settings"] != null && !settingsLoaded){
+      settings = arguments?["settings"];
+      settingsLoaded = true;
+    }
     //if(settings!.searchbarKey == null) settings!.setSearchbarKey(searchbarKey);
-    settings!.load().then((value) {
-      if(mounted){ setState(() {
-          settings = value;
-        });
-      }
-      }
-    );
+    if(!settingsLoaded){
+      settingsLoaded = true;
+      settings!.load().then((value) {
+        if(mounted){ setState(() {
+            settings = value;
+          });
+        }
+        }
+      );
+    }
 
     settings!.setHomeSetState(setState);
     searchbar ??= Searchbar.empty(key: searchbarKey, settings: settings!, onPressed: () {

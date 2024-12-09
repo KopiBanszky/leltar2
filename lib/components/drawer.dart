@@ -69,7 +69,7 @@ class BasicDrawer extends StatelessWidget {
             title: Section(
               topLeft: false,
               bottomLeft: false,
-              bottomRight: ACCESS <= 2,
+              bottomRight: Account.ACCESS <= 2,
               topRight: false,
               child: const Text(
                 'Beállítások',
@@ -82,7 +82,7 @@ class BasicDrawer extends StatelessWidget {
               Navigator.pushReplacementNamed(context, "/settings");
             },
           ),
-          if (ACCESS >= 3)
+          if (Account.ACCESS >= 3)
             ListTile(
               leading: const Icon(
                 Icons.money,
@@ -121,7 +121,7 @@ class BasicDrawer extends StatelessWidget {
               ),
             ),
             onTap: () {
-              logout();
+              Account.logout();
               Navigator.pushReplacementNamed(context, "/login");
             },
           ),

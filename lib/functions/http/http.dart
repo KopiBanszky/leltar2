@@ -22,8 +22,8 @@ Future<RquestResult> http_get(String route, [dynamic data]) async {
   data ??= Map<String, dynamic>();
   //var dataStr = jsonEncode(data);//.replaceAll(":", "=").replaceAll(",", "&").replaceAll("{", "").replaceAll("}", "");
 
-  data["userID"] = ID;
-  data["access"] = ACCESS.toString();
+  data["userID"] = Account.ID;
+  data["access"] = Account.ACCESS.toString();
   Uri url = PROTOCOLL_METHOD(DOMAIN, route, data);
   var result = await http.get(url);
   return RquestResult(jsonEncode(result.body), true);
@@ -31,8 +31,8 @@ Future<RquestResult> http_get(String route, [dynamic data]) async {
 
 Future<RquestResult> http_post(String route, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
-  data["userID"] = ID;
-  data["access"] = ACCESS.toString();
+  data["userID"] = Account.ID;
+  data["access"] = Account.ACCESS.toString();
   var dataStr = jsonEncode(data);
   var result = await http.post(url, body: dataStr, headers: {"Content-type": "application/json"});
   return RquestResult(result.body, true);
@@ -40,8 +40,8 @@ Future<RquestResult> http_post(String route, [dynamic data]) async {
 
 Future<RquestResult> http_put(String route, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
-  data["userID"] = ID;
-  data["access"] = ACCESS.toString();
+  data["userID"] = Account.ID;
+  data["access"] = Account.ACCESS.toString();
   var dataStr = jsonEncode(data);
   var result = await http.put(url, body: dataStr, headers: {"Content-type": "application/json"});
   return RquestResult(result.body, true);
@@ -49,8 +49,8 @@ Future<RquestResult> http_put(String route, [dynamic data]) async {
 
 Future<RquestResult> http_delete(String route, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
-  data["userID"] = ID;
-  data["access"] = ACCESS.toString();
+  data["userID"] = Account.ID;
+  data["access"] = Account.ACCESS.toString();
   var dataStr = jsonEncode(data);
   var result = await http.delete(url, body: dataStr, headers: {"Content-type": "application/json"});
   return RquestResult(result.body, true);
@@ -58,8 +58,8 @@ Future<RquestResult> http_delete(String route, [dynamic data]) async {
 
 Future<RquestResult> post_image(String route, File? image, XFile? webFile, bool web, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
-  data["userID"] = ID;
-  data["access"] = ACCESS.toString();
+  data["userID"] = Account.ID;
+  data["access"] = Account.ACCESS.toString();
   var request = http.MultipartRequest('POST', url);
   request.fields.addAll(data);
   print(request.fields);

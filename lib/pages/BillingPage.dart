@@ -168,14 +168,10 @@ class _BillingPageState extends State<BillingPage> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    isLoggedIn(id: "none", hash: "none").then(
-      (value) => {
-        if (!value && mounted)
-          {
-            Navigator.pushReplacementNamed(context, "/login"),
-          }
-      },
-    );
+    bool userOk = await Account.isLoggedIn(id: "none", hash: "none");
+    if (!userOk && mounted){
+      Navigator.pushReplacementNamed(context, "/login");
+    }
 
     arguments = ModalRoute.of(context)!.settings.arguments;
 

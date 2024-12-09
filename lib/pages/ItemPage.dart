@@ -34,7 +34,7 @@ class _ItemPageState extends State<ItemPage> {
   double INITIALHEIGHT = 80.0;
   double _height = 80.0;
 
-  late Item item;
+  late Item item = Item(id: -1, name: "", description: "", readableID: "", finalID: "", created: DateTime(2000), path: "");
   late List<Problem> problems = [];
 
   GlobalKey<SearchbarState> searchbarKey = GlobalKey<SearchbarState>();
@@ -43,18 +43,16 @@ class _ItemPageState extends State<ItemPage> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-
-    isLoggedIn(id: "none", hash: "none").then(
-      (value) => {
-        if (!value && mounted)
-          {
-            Navigator.pushReplacementNamed(context, "/login"),
-          }
-      },
-    );
-
     arguments = ModalRoute.of(context)!.settings.arguments;
     item = arguments["item"];
+
+    print("ItemPage: $item");
+    bool userOk = await Account.isLoggedIn(id: "none", hash: "none");
+    print(userOk);
+    if (!userOk && mounted){
+      Navigator.pushReplacementNamed(context, "/login");
+    }
+
     if (item.problems == null) {
       Problems.requestProblems(item.id).then(
         (value) => {
@@ -66,7 +64,9 @@ class _ItemPageState extends State<ItemPage> {
         },
       );
     } else {
-      problems = item.problems!.problems;
+      setState(() {
+        problems = item.problems!.problems;
+      });
     }
 
     settings ??= arguments?["settings"] ??
@@ -95,6 +95,7 @@ class _ItemPageState extends State<ItemPage> {
     appBar = ResponsiveAppBar(
       child: searchbar,
     );
+    setState(() {});
   }
 
   Future showGalleryView(int position) {

@@ -181,7 +181,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           nameController.removeListener(() {});
                           passwordController.removeListener(() {});
                           passwordAgainController.removeListener(() {});
-                          Map<String, dynamic> data = await register(nameController.text, passwordController.text);
+                          Map<String, dynamic> data = await Account.register(nameController.text, passwordController.text);
                           if (data["ok"]) {
                             Navigator.pushReplacementNamed(context, "/", arguments: {"loggedIn": true});
                           } else {
@@ -197,7 +197,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           if (!_formKey.currentState!.validate()) return;
                           nameController.removeListener(() {});
                           passwordController.removeListener(() {});
-                          Map<String, dynamic> data = await register(nameController.text, passwordController.text);
+                          Map<String, dynamic> data = await Account.register(nameController.text, passwordController.text);
                           if (data["ok"]) {
                             Navigator.pushReplacementNamed(context, "/", arguments: {"loggedIn": true});
                           } else {

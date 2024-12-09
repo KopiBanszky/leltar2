@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:leltar_2/accountSystem/isLoggedIn.dart';
 import 'package:path_provider/path_provider.dart';
 
 Future<String> get _localPath async{
@@ -22,4 +23,7 @@ void deleteFile() async{
 
 logout(){
   deleteFile();
+  Account.ACCESS = -1;
+  Account.ID = "";
+  Account.HASH = "";
 }

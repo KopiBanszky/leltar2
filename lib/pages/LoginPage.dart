@@ -149,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                           if (!_formKey.currentState!.validate()) return;
                           nameController.removeListener(() {});
                           passwordController.removeListener(() {});
-                          Map<String, dynamic> data = await login(nameController.text, passwordController.text);
+                          Map<String, dynamic> data = await Account.login(nameController.text, passwordController.text);
                           if (data["ok"]) {
                             Navigator.pushReplacementNamed(context, "/", arguments: {"loggedIn": true});
                           } else {
@@ -165,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                           if (!_formKey.currentState!.validate()) return;
                           nameController.removeListener(() {});
                           passwordController.removeListener(() {});
-                          Map<String, dynamic> data = await login(nameController.text, passwordController.text);
+                          Map<String, dynamic> data = await Account.login(nameController.text, passwordController.text);
                           if (data["ok"]) {
                             Navigator.pushReplacementNamed(context, "/", arguments: {"loggedIn": true});
                           } else {
