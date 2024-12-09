@@ -50,7 +50,7 @@ class Category {
       finalID: json['finalID'],
       created: DateTime.parse(json['timestamp']),
       path: json['path'],
-      icon: Icons.folder_copy_outlined,
+      icon: IconData(int.parse(json['icon'] ?? '0xf05ff'), fontFamily: 'MaterialIcons'),
     );
   }
 
