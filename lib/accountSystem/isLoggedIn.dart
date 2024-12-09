@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:leltar_2/functions/http/http.dart';
 import 'package:localstore/localstore.dart';
 
-int ACCESS = 3;
-String ID = "17328348390280";
+int ACCESS = -1;
+String ID = "";
 
 Future<Map<String, dynamic>?> readFile() async {
   final Localstore localstore = Localstore.instance;
@@ -36,6 +36,9 @@ Future<Map<String, dynamic>> login(String name, String password) async {
 
 Future<bool> isLoggedIn({required String id, required String hash}) async {
   if (id == "none" && hash == "none") {
+    if(ID != "" && ACCESS > -1) {
+      return true;
+    }
     Map<String, dynamic>? resultFromFile = await readFile();
     if (resultFromFile == null) {
       return false;
