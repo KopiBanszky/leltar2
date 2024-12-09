@@ -50,7 +50,7 @@ class Category {
       finalID: json['finalID'],
       created: DateTime.parse(json['timestamp']),
       path: json['path'],
-      icon: IconData(int.parse(json['icon'] ?? '0xf05ff'), fontFamily: 'MaterialIcons'),
+      icon: IconData(int.parse(json['icon'] ?? '0xf05ff'), fontFamily: json['iconType'] ?? 'MaterialIcons'),
     );
   }
 
@@ -474,5 +474,25 @@ class Categories {
 
   void clear() {
     items.clear();
+  }
+
+  static Future<int> createCategory(
+    String name, {
+    String description = "",
+    String path = "default",
+    String icon = "0xf05ff",
+    String iconType = "MaterialIcons",
+  }) async {
+    RquestResult res = await Request.post("createCategory", {
+      "name": name,
+      "description": description,
+      "path": path,
+      "icon": icon,
+      "iconType": iconType,
+    });
+    if(res.ok) {
+      return 1;
+    }
+    return -1;
   }
 }

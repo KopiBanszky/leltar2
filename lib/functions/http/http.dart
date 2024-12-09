@@ -56,33 +56,30 @@ Future<RquestResult> http_delete(String route, [dynamic data]) async {
   return RquestResult(result.body, true);
 }
 
-Future<RquestResult> post_image(String route, File? image, XFile? webFile, bool web, [dynamic data]) async {
+Future<RquestResult> post_image(String route, List<File>? image, List<XFile>? webFile, bool web, [dynamic data]) async {
   Uri url = PROTOCOLL_METHOD(DOMAIN, route);
   data["userID"] = Account.ID;
   data["access"] = Account.ACCESS.toString();
   var request = http.MultipartRequest('POST', url);
   request.fields.addAll(data);
-  print(request.fields);
-  print(image!.path);
   if (!web) {
-    print("NEMWEB");
-    print(image.path);
-    request.files.add(await http.MultipartFile.fromPath(
-      'files',
-      image!.path,
-    ));
+    image!.forEach((element) async {
+      request.files.add(await http.MultipartFile.fromPath(
+        'files',
+        element.path,
+      ));
+    });
   }
 
   if (web) {
-    print("WEB");
-    print(webFile!.name);
-    request.files.add(http.MultipartFile.fromBytes(
-      'files',
-      await webFile!.readAsBytes(),
-      filename: webFile.name,
-    ));
+    webFile!.forEach((element) async {
+      request.files.add(http.MultipartFile.fromBytes(
+        'files',
+        await element.readAsBytes(),
+        filename: element.name,
+      ));
+    });
   }
-  print(request.files.first.filename);
   var result = await request.send();
   return RquestResult(result, result.statusCode >= 200 && result.statusCode < 300);
 }

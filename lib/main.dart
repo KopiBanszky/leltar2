@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:leltar_2/helper/searchHelper.dart';
 import 'package:leltar_2/pages/BillingPage.dart';
-import 'package:leltar_2/pages/HomaPage.dart';
+import 'package:leltar_2/pages/HomePage.dart';
 import 'package:leltar_2/pages/ItemPage.dart';
 import 'package:leltar_2/pages/LoginPage.dart';
 import 'package:leltar_2/pages/NewItemPage.dart';

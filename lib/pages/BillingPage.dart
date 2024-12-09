@@ -103,7 +103,7 @@ class _BillingPageState extends State<BillingPage> {
         if (await File(path).exists() == false) await Directory(path).create();
         image!.copy("$path\\${DateTime.now().millisecondsSinceEpoch}.jpg");
       }
-      post_image("uploadBill", kIsWeb ? null : image, kIsWeb ? imageX : null, kIsWeb, {
+      post_image("uploadBill", kIsWeb ? null : [image!], kIsWeb ? [imageX!] : null, kIsWeb, {
         "income": (income ? 1 : 0).toString(),
         "white": (whiteMoney ? 1 : 0).toString(),
         "cash": (kp ? 1 : 0).toString(),
