@@ -64,13 +64,18 @@ class _NewItemPageState extends State<NewItemPage> {
   bool isCategory = true;
   int max = 0;
 
+  bool loading = true;
+
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    arguments = ModalRoute.of(context)!.settings.arguments;
-    parent = arguments["parent"];
-    isCategory = arguments["type"] == "category";
-    max = arguments["max"] + 1;
+    if(loading){
+      arguments = ModalRoute.of(context)!.settings.arguments;
+      parent = arguments["parent"];
+      isCategory = arguments["type"] == "category";
+      max = arguments["max"] + 1;
+      loading = false;
+    }
 
 
     bool userOk = await Account.isLoggedIn(id: "none", hash: "none");
