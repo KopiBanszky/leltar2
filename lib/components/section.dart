@@ -30,7 +30,7 @@ class _SectionState extends State<Section> {
   bool get bottomLeft => widget.bottomLeft ?? true;
   bool get bottomRight => widget.bottomRight ?? true;
 
-  Duration duration = Duration(seconds: 50);
+  Duration duration = const Duration(seconds: 50);
 
   List<Color> colors = [
     const Color.fromARGB(100, 41, 139, 245),

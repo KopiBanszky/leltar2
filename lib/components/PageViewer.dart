@@ -134,7 +134,7 @@ class PageViewerWithIndicatorState extends State<PageViewerWithIndicator>
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
+        SizedBox(
           height: height,
           child: pages.elementAt(controller.pageIndex),
         ),

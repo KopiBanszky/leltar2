@@ -15,7 +15,7 @@ class RquestResult {
 const PROTOCOL = "https";
 const PROTOCOLL_METHOD = Uri.https;
 const DOMAIN = "db.439boldogasszony.hu";
-const VERSION = "2.1.0";
+const VERSION = "2.1.1";
 // const DOMAIN = "192.168.1.69:9081";
 
 Future<RquestResult> http_get(String route, [dynamic data]) async {

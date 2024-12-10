@@ -93,8 +93,8 @@ class _PathComponentState extends State<PathComponent> {
                 }
               },
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.transparent),
-                padding: MaterialStateProperty.all(EdgeInsets.all(widget.padding)),
+                backgroundColor: WidgetStateProperty.all(Colors.transparent),
+                padding: WidgetStateProperty.all(EdgeInsets.all(widget.padding)),
               ),
               child: Text(
                 items[i].name,
@@ -134,7 +134,7 @@ class _PathComponentState extends State<PathComponent> {
                 Navigator.popUntil(context, (route) => route.isFirst);
               },
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                backgroundColor: WidgetStateProperty.all(Colors.transparent),
               ),
               padding: EdgeInsets.all(widget.padding),
               icon: Icon(

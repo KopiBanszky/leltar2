@@ -31,14 +31,14 @@ class _AutocompleteHelpState extends State<AutocompleteHelp> {
           // onEditingComplete: widget.onEditingComplete,
           // onAppPrivateCommand: widget.onAppPrivateCommand,
           // keyboardType: widget.inputType,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.normal,
           ),
           cursorColor: Colors.white,
           // enableInteractiveSelection: false,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             prefixIcon: null,
             suffixIcon: null,
             enabledBorder: true
@@ -49,7 +49,7 @@ class _AutocompleteHelpState extends State<AutocompleteHelp> {
                       // style: BorderStyle.none,
                     ),
                   )
-                : const OutlineInputBorder(
+                : OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.transparent,
                     ),
@@ -62,29 +62,29 @@ class _AutocompleteHelpState extends State<AutocompleteHelp> {
                       // style: BorderStyle.none,
                     ),
                   )
-                : const OutlineInputBorder(
+                : OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.transparent,
                     ),
                   ),
-            focusedBorder: const OutlineInputBorder(
+            focusedBorder: OutlineInputBorder(
               borderSide: BorderSide(
                 color: Colors.transparent,
               ),
             ),
-            errorBorder: const UnderlineInputBorder(
+            errorBorder: UnderlineInputBorder(
               borderSide: BorderSide(
                 width: 1,
                 color: Colors.red,
               ),
             ),
-            focusedErrorBorder: const UnderlineInputBorder(
+            focusedErrorBorder: UnderlineInputBorder(
               borderSide: BorderSide(
                 width: 1,
                 color: Colors.red,
               ),
             ),
-            errorStyle: const TextStyle(
+            errorStyle: TextStyle(
               color: Colors.red,
               fontSize: 10,
             ),

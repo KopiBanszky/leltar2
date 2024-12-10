@@ -4,7 +4,7 @@ class ResponsiveAppBar {
   double scrollStatus = 0.0;
   Widget? child;
 
-  ResponsiveAppBar({this.child}) {}
+  ResponsiveAppBar({this.child});
 
   bool setScrollStatus(double status) {
     bool gradient = scrollStatus < 10.0;
