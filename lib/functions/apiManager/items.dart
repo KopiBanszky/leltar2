@@ -1,7 +1,9 @@
 // ignore_for_file: curly_braces_in_flow_control_structures, no_leading_underscores_for_local_identifiers
 
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:leltar_2/components/ListItem.dart';
 import 'package:leltar_2/components/WidgetItem.dart';
@@ -12,6 +14,7 @@ import 'package:leltar_2/functions/apiManager/problems.dart';
 import 'package:leltar_2/functions/apiManager/widgetManager.dart';
 import 'package:leltar_2/functions/http/http.dart';
 import 'package:leltar_2/functions/itembuilder.dart';
+import 'package:image_picker/image_picker.dart';
 
 
 class Item {
@@ -568,5 +571,30 @@ class Items {
 
   void clear() {
     items = [];
+  }
+
+  static Future<int> createItem(
+    String name,{
+      String description = "",
+      String path = "default",
+      String readableID = "",
+      List<XFile> images = const [],
+    }
+  ) async {
+    List<File> image = [];
+    if(!kIsWeb) for (var img in images) {
+      image.add(File(img.path));
+    }
+    RquestResult res = await post_image("/createItem", image, images, kIsWeb, {
+      "name": name,
+      "description": description,
+      "path": path,
+      "readableID": readableID,
+    });
+    
+    if(res.ok) {
+      return 1;
+    }
+    return -1;
   }
 }

@@ -401,9 +401,25 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Button(
-                        onPressed: () {
-                          Navigator.pushNamed(context, "/newItem", arguments: {"type": pageIndex == 0 ? "category": "item"},);
-                        }, //TODO: page index
+                        onPressed: () async {
+                           dynamic result = await Navigator.pushNamed(context, "/newItem", arguments: {
+                            "type": pageIndex == 0 ? "category": "item",
+                            "parent": arguments?["name"] ?? "default",
+                            "path": arguments?["route"] ?? "default",
+                            "max": items.items.length,
+                            });
+                            if(result != null){
+                              if(result["ok"]) {
+                                CustomSnackbar.show(context, "Sikeres mentés");
+                                await categories.getCategories(arguments?["route"] ?? "default", search: arguments?["search"] ?? "", order: ToStr.order(settings!.order), orderBy: ToStr.sortBy(settings!.orderBy));
+                                items.getItems(arguments?["route"] ?? "default", search: arguments?["search"] ?? "", order: ToStr.order(settings!.order), img: settings!.indexImages, orderBy: ToStr.sortBy(settings!.orderBy), updateOnLoad: true, onLoad: () {
+                                  loadItems();
+                                });
+                              } else {
+                                CustomSnackbar.show(context, "Sikertelen mentés, hiba történt");
+                              }
+                            }
+                        },
                         text: "Új",
                         icon: pageIndex == 0 ? Icons.create_new_folder_outlined : Icons.add_circle_outline,
                         fontSize: 16,
